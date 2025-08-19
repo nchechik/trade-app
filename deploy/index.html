@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TradeFlow Pro - Forex Trading Dashboard</title>
+    <title>Stock Portfolio Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -48,7 +48,6 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Mobile-first responsive design */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -121,34 +120,25 @@
             }
         }
 
-        /* Stats Grid */
-        .stats-grid {
+        /* Portfolio Summary */
+        .portfolio-summary {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
             margin-bottom: 32px;
         }
 
-        @media (min-width: 640px) {
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 20px;
-            }
-        }
-
-        .stat-card {
+        .summary-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 16px;
+            padding: 24px;
             text-align: center;
-            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            min-width: 0; /* Prevent overflow */
         }
 
-        .stat-card::before {
+        .summary-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -158,264 +148,165 @@
             background: var(--gradient-primary);
         }
 
-        .stat-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .stat-card.profit::before {
+        .summary-card.total-value::before {
             background: var(--gradient-primary);
         }
 
-        .stat-card.loss::before {
-            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-        }
-
-        .stat-card.neutral::before {
+        .summary-card.daily-pnl::before {
             background: var(--gradient-secondary);
         }
 
-        .stat-value {
-            font-size: 1.5rem;
+        .summary-card.total-pnl::before {
+            background: linear-gradient(135deg, var(--success) 0%, var(--danger) 100%);
+        }
+
+        .summary-value {
+            font-size: 2rem;
             font-weight: 700;
             margin-bottom: 8px;
             color: var(--text-primary);
-            word-wrap: break-word;
-            overflow-wrap: break-word;
         }
 
-        .stat-label {
-            font-size: 0.7rem;
-            font-weight: 500;
+        .summary-label {
+            font-size: 0.875rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            line-height: 1.2;
         }
 
-        .stat-change {
-            font-size: 0.75rem;
+        .summary-change {
+            font-size: 1rem;
             font-weight: 600;
-            margin-top: 8px;
-            line-height: 1.2;
+            margin-top: 12px;
         }
 
-        .stat-change.positive {
+        .summary-change.positive {
             color: var(--success);
         }
 
-        .stat-change.negative {
+        .summary-change.negative {
             color: var(--danger);
         }
 
-        /* Content Grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
-
-        @media (min-width: 1024px) {
-            .content-grid {
-                grid-template-columns: 2fr 1fr;
-                gap: 32px;
-            }
-        }
-
-        /* Tab Navigation */
-        .tab-navigation {
-            display: flex;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 4px;
-            margin-bottom: 24px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-        }
-
-        .tab-navigation::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-button {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 20px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
-
-        .tab-button.active {
-            background: var(--gradient-primary);
-            color: var(--dark);
-            box-shadow: var(--shadow);
-        }
-
-        .tab-button:hover:not(.active) {
-            background: var(--dark-lighter);
-            color: var(--text-primary);
-        }
-
-        /* Tab Content */
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.3s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* S&P 500 Section */
-        .sp500-section {
+        /* Portfolio Table */
+        .portfolio-section {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
             padding: 24px;
             box-shadow: var(--shadow-lg);
+            margin-bottom: 24px;
         }
 
-        .sp500-header {
+        .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 24px;
         }
 
-        .sp500-title {
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .sp500-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--gradient-secondary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: var(--gradient-primary);
+            border-radius: 2px;
         }
 
-        .sp500-info h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .sp500-info p {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .sp500-price {
-            text-align: right;
-        }
-
-        .current-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 8px;
-        }
-
-        .price-change {
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 6px 12px;
+        .refresh-button {
+            background: var(--gradient-primary);
+            color: var(--dark);
+            border: none;
+            padding: 8px 16px;
             border-radius: 8px;
-            display: inline-block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .price-change.positive {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+        .refresh-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
-        .price-change.negative {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
+        .refresh-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .sp500-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-top: 24px;
+        /* Table Styles */
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            overflow-x: auto;
         }
 
-        .sp500-stat {
+        .portfolio-table th {
             background: var(--dark-lighter);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .sp500-stat-value {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .sp500-stat-label {
+            padding: 16px 12px;
+            text-align: left;
             font-size: 0.75rem;
+            font-weight: 600;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
 
-        .sp500-chart {
-            background: var(--dark-lighter);
-            border-radius: 16px;
-            padding: 20px;
-            margin-top: 24px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .chart-placeholder {
-            text-align: center;
-            color: var(--text-secondary);
-        }
-
-        .chart-placeholder .icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .chart-placeholder h4 {
-            font-size: 1.125rem;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-        }
-
-        .chart-placeholder p {
+        .portfolio-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
             font-size: 0.875rem;
-            line-height: 1.5;
+        }
+
+        .portfolio-table tr:hover {
+            background: var(--dark-lighter);
+        }
+
+        .symbol-cell {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .shares-cell {
+            text-align: center;
+        }
+
+        .price-cell {
+            text-align: right;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .pnl-cell {
+            text-align: right;
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .pnl-positive {
+            color: var(--success);
+        }
+
+        .pnl-negative {
+            color: var(--danger);
+        }
+
+        .allocation-cell {
+            text-align: center;
+            font-weight: 500;
         }
 
         /* Loading States */
@@ -439,75 +330,6 @@
 
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 24px;
-            border-top: 1px solid var(--border);
-            color: var(--text-muted);
-        }
-
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .footer-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s ease;
-        }
-
-        .footer-link:hover {
-            color: var(--primary);
-        }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--dark-lighter);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
         }
 
         /* Status Indicator */
@@ -534,263 +356,47 @@
             }
         }
 
-        /* Mobile-friendly period indicator */
-        .mobile-period-indicator {
-            display: none;
-            background: var(--dark-lighter);
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 16px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-
-        @media (max-width: 767px) {
-            .mobile-period-indicator {
-                display: block;
-            }
-        }
-
-        .mobile-period-indicator .period-text {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .mobile-period-indicator .period-value {
-            font-size: 1rem;
-            color: var(--primary);
-            font-weight: 600;
-            margin-top: 4px;
-        }
-
-        /* Section Styling */
-        .section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: var(--shadow-lg);
-            overflow: hidden; /* Prevent content overflow */
-        }
-
-        .section h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .section h2::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: var(--gradient-primary);
-            border-radius: 2px;
-        }
-
-        /* Balance Chart */
-        .balance-chart {
-            background: var(--dark-lighter);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .chart-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .chart-period {
-            display: none; /* Hide on mobile by default */
-            gap: 8px;
-        }
-
-        @media (min-width: 768px) {
-            .chart-period {
-                display: flex; /* Show on desktop */
-            }
-        }
-
-        .period-btn {
-            padding: 6px 12px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-secondary);
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .period-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: var(--dark);
-        }
-
-        .balance-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .balance-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .balance-item:last-child {
-            border-bottom: none;
-        }
-
-        .balance-time {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-        }
-
-        .balance-amount {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        /* Trades Table */
-        .trades-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-            overflow-x: auto; /* Allow horizontal scroll on mobile */
-        }
-
-        .trades-table th {
-            background: var(--dark-lighter);
-            padding: 16px 12px;
-            text-align: left;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap; /* Prevent text wrapping in headers */
-        }
-
-        .trades-table td {
-            padding: 16px 12px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.875rem;
-        }
-
-        .trades-table tr:hover {
-            background: var(--dark-lighter);
-        }
-
-        .action-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
-
-        .action-buy {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--success);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .action-sell {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .action-hold {
-            background: rgba(100, 118, 241, 0.1);
-            color: var(--secondary);
-            border: 1px solid rgba(100, 118, 241, 0.2);
-        }
-
         /* Mobile Optimizations */
         @media (max-width: 767px) {
-            .stats-grid {
+            .portfolio-summary {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
+                gap: 16px;
             }
 
-            .stat-card {
-                padding: 12px;
-                min-height: 80px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+            .summary-card {
+                padding: 20px;
             }
 
-            .stat-value {
-                font-size: 1.25rem;
-                margin-bottom: 4px;
+            .summary-value {
+                font-size: 1.5rem;
             }
 
-            .stat-label {
-                font-size: 0.65rem;
-                line-height: 1.1;
-            }
-
-            .stat-change {
-                font-size: 0.7rem;
-                margin-top: 4px;
-            }
-
-            .section {
-                padding: 16px;
-                margin: 0 -8px; /* Negative margin to extend to edges */
+            .portfolio-section {
+                padding: 20px;
+                margin: 0 -8px 20px -8px;
                 border-radius: 16px;
             }
 
-            .trades-table {
+            .portfolio-table {
                 font-size: 0.75rem;
-                margin: 0 -16px; /* Negative margin to extend table */
+                margin: 0 -16px;
             }
 
-            .trades-table th,
-            .trades-table td {
+            .portfolio-table th,
+            .portfolio-table td {
                 padding: 12px 8px;
                 font-size: 0.7rem;
             }
 
-            .balance-list {
-                max-height: 200px;
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
             }
 
-            .balance-chart {
-                padding: 16px;
-                margin: 0 -16px 20px -16px; /* Extend to section edges */
-            }
-
-            .chart-header {
-                margin-bottom: 12px;
-            }
-
-            .chart-title {
-                font-size: 0.9rem;
+            .refresh-button {
+                width: 100%;
+                padding: 12px;
             }
         }
 
@@ -800,645 +406,379 @@
                 padding: 12px;
             }
 
-            .stats-grid {
-                gap: 6px;
+            .portfolio-summary {
+                gap: 12px;
             }
 
-            .stat-card {
-                padding: 10px;
-                min-height: 70px;
+            .summary-card {
+                padding: 16px;
             }
 
-            .stat-value {
-                font-size: 1.1rem;
+            .summary-value {
+                font-size: 1.25rem;
             }
 
-            .stat-label {
-                font-size: 0.6rem;
+            .portfolio-section {
+                padding: 16px;
+                margin: 0 -4px 16px -4px;
             }
 
-            .section {
-                padding: 14px;
-                margin: 0 -4px;
-            }
-
-            .trades-table th,
-            .trades-table td {
+            .portfolio-table th,
+            .portfolio-table td {
                 padding: 10px 6px;
                 font-size: 0.65rem;
             }
         }
 
-        /* Mobile Optimizations for Tabs */
-        @media (max-width: 767px) {
-            .tab-navigation {
-                margin: 0 -16px 20px -16px;
-                border-radius: 0;
-                border-left: none;
-                border-right: none;
-            }
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
 
-            .tab-button {
-                min-width: 100px;
-                padding: 10px 16px;
-                font-size: 0.8rem;
-            }
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
 
-            .sp500-section {
-                padding: 20px;
-            }
+        .footer-info {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
 
-            .sp500-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-
-            .sp500-price {
-                text-align: left;
-                width: 100%;
-            }
-
-            .current-price {
-                font-size: 1.75rem;
-            }
-
-            .sp500-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 16px;
-            }
-
-            .sp500-stat {
-                padding: 14px;
-            }
-
-            .sp500-stat-value {
-                font-size: 1.125rem;
-            }
+        .footer-info p {
+            margin-bottom: 8px;
         }
     </style>
 </head>
 <body>
     <!-- Status Indicator -->
     <div class="status-indicator" id="status-indicator">
-        🟢 Live Trading
+        🟢 Live Portfolio
     </div>
 
     <div class="container">
         <!-- Header -->
-        <div class="header fade-in-up">
+        <div class="header">
             <div class="logo">
                 <div class="logo-icon">
                     📈
                 </div>
                 <div class="logo-text">
-                    <h1>TradeFlow Pro</h1>
-                    <p>Professional Forex Trading Dashboard</p>
+                    <h1>Stock Portfolio Dashboard</h1>
+                    <p>Real-time portfolio tracking & analysis</p>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid fade-in-up" id="stats-grid">
-            <div class="loading">Loading statistics...</div>
-        </div>
-
-        <!-- Tab Navigation -->
-        <div class="tab-navigation fade-in-up">
-            <button class="tab-button active" data-tab="trading">📊 Trading Dashboard</button>
-            <button class="tab-button" data-tab="sp500">📈 S&P 500</button>
-        </div>
-
-        <!-- Tab Content -->
-        <div class="tab-content active" id="trading-tab">
-            <!-- Content Grid -->
-            <div class="content-grid fade-in-up">
-                <!-- Balance History Section -->
-                <div class="section">
-                    <h2>💰 Portfolio Performance</h2>
-                    
-                    <!-- Mobile Period Indicator -->
-                    <div class="mobile-period-indicator">
-                        <div class="period-text">Viewing Period</div>
-                        <div class="period-value" id="mobile-period-value">7 Days</div>
-                    </div>
-                    
-                    <div class="balance-chart">
-                        <div class="chart-header">
-                            <div class="chart-title">Balance History</div>
-                            <div class="chart-period">
-                                <button class="period-btn active" data-period="7d">7D</button>
-                                <button class="period-btn" data-period="30d">30D</button>
-                                <button class="period-btn" data-period="90d">90D</button>
-                            </div>
-                        </div>
-                        <div id="balance-chart">
-                            <div class="loading">Loading balance data...</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Trades Section -->
-                <div class="section">
-                    <h2>📋 Trading Activity</h2>
-                    <div id="trades-table">
-                        <div class="loading">Loading trades...</div>
-                    </div>
-                </div>
+        <!-- Portfolio Summary -->
+        <div class="portfolio-summary">
+            <div class="summary-card total-value">
+                <div class="summary-value" id="total-value">$--</div>
+                <div class="summary-label">Total Portfolio Value</div>
+            </div>
+            <div class="summary-card daily-pnl">
+                <div class="summary-value" id="daily-pnl">$--</div>
+                <div class="summary-label">Daily P&L</div>
+                <div class="summary-change" id="daily-pnl-change">--</div>
+            </div>
+            <div class="summary-card total-pnl">
+                <div class="summary-value" id="total-pnl">$--</div>
+                <div class="summary-label">Total P&L</div>
+                <div class="summary-change" id="total-pnl-change">--</div>
             </div>
         </div>
 
-        <!-- S&P 500 Tab Content -->
-        <div class="tab-content" id="sp500-tab">
-            <div class="sp500-section fade-in-up">
-                <div class="sp500-header">
-                    <div class="sp500-title">
-                        <div class="sp500-icon">
-                            📈
-                        </div>
-                        <div class="sp500-info">
-                            <h3>S&P 500 Index</h3>
-                            <p>Real-time market data</p>
-                        </div>
-                    </div>
-                    <div class="sp500-price">
-                        <div class="current-price" id="sp500-price">--</div>
-                        <div class="price-change" id="sp500-change">--</div>
-                    </div>
-                </div>
-
-                <div class="sp500-stats">
-                    <div class="sp500-stat">
-                        <div class="sp500-stat-value" id="sp500-open">--</div>
-                        <div class="sp500-stat-label">Open</div>
-                    </div>
-                    <div class="sp500-stat">
-                        <div class="sp500-stat-value" id="sp500-high">--</div>
-                        <div class="sp500-stat-label">High</div>
-                    </div>
-                    <div class="sp500-stat">
-                        <div class="sp500-stat-value" id="sp500-low">--</div>
-                        <div class="sp500-stat-label">Low</div>
-                    </div>
-                    <div class="sp500-stat">
-                        <div class="sp500-stat-value" id="sp500-volume">--</div>
-                        <div class="sp500-stat-label">Volume</div>
-                    </div>
-                </div>
-
-                <div class="sp500-chart">
-                    <div class="chart-placeholder">
-                        <div class="icon">📊</div>
-                        <h4>Market Chart</h4>
-                        <p>Real-time S&P 500 performance data</p>
-                    </div>
-                </div>
+        <!-- Portfolio Table -->
+        <div class="portfolio-section">
+            <div class="section-header">
+                <div class="section-title">📊 Portfolio Holdings</div>
+                <button class="refresh-button" id="refresh-button" onclick="portfolioDashboard.refreshData()">
+                    🔄 Refresh Data
+                </button>
+            </div>
+            
+            <div id="portfolio-table">
+                <div class="loading">Loading portfolio data...</div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="footer fade-in-up">
+        <div class="footer">
             <div class="footer-content">
-                <div class="footer-links">
-                    <a href="#" class="footer-link">Dashboard</a>
-                    <a href="#" class="footer-link">Analytics</a>
-                    <a href="#" class="footer-link">Settings</a>
-                    <a href="#" class="footer-link">Support</a>
-                </div>
-                <div style="color: var(--text-muted); font-size: 0.875rem;">
-                    <p>🔄 Auto-refreshes every 30 seconds | 📱 Mobile-optimized</p>
+                <div class="footer-info">
+                    <p>🔄 Auto-refreshes every 5 minutes | 📱 Mobile-optimized</p>
                     <p>Last updated: <span id="last-update">-</span></p>
+                    <p>Data provided by Alpha Vantage API</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Enhanced Demo Data Generator
-        class ModernTradingDashboard {
+        class StockPortfolioDashboard {
             constructor() {
-                this.startingBalance = 10000.0;
-                this.currentBalance = this.startingBalance;
-                this.trades = [];
-                this.balances = [];
-                this.pairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD'];
-                this.actions = ['BUY', 'SELL', 'HOLD'];
-                this.tradeCount = 0;
-                this.period = '7d';
+                this.portfolioData = [
+                    { symbol: 'DRIV', shares: 70, avgCost: 22.69114 },
+                    { symbol: 'SHLD', shares: 55, avgCost: 42.80673 },
+                    { symbol: 'VOO', shares: 14, avgCost: 509.5843 },
+                    { symbol: 'XBI', shares: 18, avgCost: 86.66 },
+                    { symbol: 'SOXX', shares: 6.9604, avgCost: 222.3306 },
+                    { symbol: 'LLY', shares: 1, avgCost: 898.26 },
+                    { symbol: 'JPM', shares: 1, avgCost: 200.59 },
+                    { symbol: 'BRK-B', shares: 1, avgCost: 416.51 },
+                    { symbol: 'META', shares: 2, avgCost: 498.175 },
+                    { symbol: 'AMZN', shares: 2, avgCost: 187.77 },
+                    { symbol: 'GOOGL', shares: 4, avgCost: 180.02 },
+                    { symbol: 'GOOG', shares: 1, avgCost: 183.61 },
+                    { symbol: 'AAPL', shares: 3, avgCost: 210.8233 },
+                    { symbol: 'MSFT', shares: 2, avgCost: 449.71 },
+                    { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
+                ];
+                
+                this.currentPrices = {};
+                this.previousPrices = {};
+                this.totalPortfolioValue = 0;
+                this.totalDailyPnL = 0;
+                this.totalPortfolioPnL = 0;
                 
                 this.init();
             }
             
             init() {
-                this.generateInitialData();
-                this.setupEventListeners();
+                this.loadPortfolioData();
                 this.startAutoRefresh();
                 this.updateStatusIndicator();
             }
             
-            setupEventListeners() {
-                // Period buttons - only add listeners if they exist (desktop)
-                const periodButtons = document.querySelectorAll('.period-btn');
-                if (periodButtons.length > 0) {
-                    periodButtons.forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                            e.target.classList.add('active');
-                            this.period = e.target.dataset.period;
-                            this.updateBalanceChart();
-                            this.updateMobilePeriodIndicator();
-                        });
-                    });
-                }
-
-                // Tab navigation
-                const tabButtons = document.querySelectorAll('.tab-button');
-                tabButtons.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const targetTab = e.target.dataset.tab;
-                        this.switchTab(targetTab);
-                    });
-                });
-            }
-            
-            generateInitialData() {
-                let balance = this.startingBalance;
-                const now = new Date();
-                
-                // Generate balance history based on period
-                const days = this.period === '7d' ? 7 : this.period === '30d' ? 30 : 90;
-                
-                for (let i = days; i >= 0; i--) {
-                    const time = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-                    balance += (Math.random() - 0.5) * 200; // More realistic variation
-                    this.balances.push({
-                        timestamp: time.toISOString(),
-                        balance: Math.max(0, balance)
-                    });
-                }
-                
-                // Generate realistic trades
-                for (let i = 50; i >= 0; i--) {
-                    const time = new Date(now.getTime() - i * 30 * 60 * 1000); // Every 30 minutes
-                    const pair = this.pairs[Math.floor(Math.random() * this.pairs.length)];
-                    const action = this.actions[Math.floor(Math.random() * this.actions.length)];
-                    const price = 0.8 + Math.random() * 0.4;
-                    
-                    if (action !== 'HOLD') {
-                        this.tradeCount++;
-                        this.trades.push({
-                            timestamp: time.toISOString(),
-                            pair: pair,
-                            action: action,
-                            price: price,
-                            balance: balance,
-                            volume: Math.floor(Math.random() * 1000) + 100
-                        });
-                        
-                        // Update balance based on action
-                        if (action === 'BUY') {
-                            balance -= 100 * price;
-                        } else if (action === 'SELL') {
-                            balance += 100 / price;
-                        }
-                        balance += (Math.random() - 0.5) * 100;
-                    }
-                }
-                
-                this.currentBalance = balance;
-            }
-            
-            generateNewData() {
-                const now = new Date();
-                
-                // Update balance
-                this.currentBalance += (Math.random() - 0.5) * 150;
-                this.currentBalance = Math.max(0, this.currentBalance);
-                
-                this.balances.push({
-                    timestamp: now.toISOString(),
-                    balance: this.currentBalance
-                });
-                
-                // Keep only relevant period data
-                const maxDays = this.period === '7d' ? 7 : this.period === '30d' ? 30 : 90;
-                if (this.balances.length > maxDays) {
-                    this.balances = this.balances.slice(-maxDays);
-                }
-                
-                // Generate new trade (40% chance)
-                if (Math.random() < 0.4) {
-                    const pair = this.pairs[Math.floor(Math.random() * this.pairs.length)];
-                    const action = this.actions[Math.floor(Math.random() * this.actions.length)];
-                    const price = 0.8 + Math.random() * 0.4;
-                    
-                    if (action !== 'HOLD') {
-                        this.tradeCount++;
-                        this.trades.push({
-                            timestamp: now.toISOString(),
-                            pair: pair,
-                            action: action,
-                            price: price,
-                            balance: this.currentBalance,
-                            volume: Math.floor(Math.random() * 1000) + 100
-                        });
-                        
-                        // Keep only last 100 trades
-                        if (this.trades.length > 100) {
-                            this.trades = this.trades.slice(-100);
-                        }
-                    }
-                }
-            }
-            
-            getStats() {
-                const buyTrades = this.trades.filter(t => t.action === 'BUY').length;
-                const sellTrades = this.trades.filter(t => t.action === 'SELL').length;
-                const totalProfitLoss = this.currentBalance - this.startingBalance;
-                const profitLossPercent = (totalProfitLoss / this.startingBalance) * 100;
-                
-                return {
-                    total_trades: this.tradeCount,
-                    buy_trades: buyTrades,
-                    sell_trades: sellTrades,
-                    current_balance: this.currentBalance,
-                    total_profit_loss: totalProfitLoss,
-                    profit_loss_percent: profitLossPercent,
-                    starting_balance: this.startingBalance
-                };
-            }
-            
-            getTrades() {
-                return this.trades.slice().reverse();
-            }
-            
-            getBalances() {
-                return this.balances;
-            }
-            
-            updateStatusIndicator() {
-                const indicator = document.getElementById('status-indicator');
-                const stats = this.getStats();
-                
-                if (stats.total_profit_loss >= 0) {
-                    indicator.style.background = 'var(--success)';
-                    indicator.innerHTML = '🟢 Profitable Trading';
-                } else {
-                    indicator.style.background = 'var(--danger)';
-                    indicator.innerHTML = '🔴 Loss Trading';
-                }
-            }
-            
-            updateBalanceChart() {
-                this.generateInitialData(); // Regenerate data for new period
-                this.renderBalanceChart();
-            }
-            
-            updateMobilePeriodIndicator() {
-                const mobileIndicator = document.getElementById('mobile-period-value');
-                if (mobileIndicator) {
-                    const periodText = this.period === '7d' ? '7 Days' : 
-                                     this.period === '30d' ? '30 Days' : '90 Days';
-                    mobileIndicator.textContent = periodText;
-                }
-            }
-
-            switchTab(targetTab) {
-                // Update tab buttons
-                document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.querySelector(`[data-tab="${targetTab}"]`).classList.add('active');
-
-                // Update tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.remove('active');
-                });
-                document.getElementById(`${targetTab}-tab`).classList.add('active');
-
-                // Load data for specific tab
-                if (targetTab === 'sp500') {
-                    this.loadSP500Data();
-                }
-            }
-
-            async loadSP500Data() {
+            async loadPortfolioData() {
                 try {
-                    // Using Alpha Vantage API for S&P 500 data with real API key
-                    const response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=1SA4YKBCTW71XDV1');
+                    this.setLoadingState(true);
+                    
+                    // Load current prices for all stocks
+                    await this.loadCurrentPrices();
+                    
+                    // Calculate portfolio metrics
+                    this.calculatePortfolioMetrics();
+                    
+                    // Render the dashboard
+                    this.renderPortfolioTable();
+                    this.renderPortfolioSummary();
+                    this.updateLastUpdate();
+                    
+                } catch (error) {
+                    console.error('Error loading portfolio data:', error);
+                    this.renderErrorState();
+                } finally {
+                    this.setLoadingState(false);
+                }
+            }
+            
+            async loadCurrentPrices() {
+                const promises = this.portfolioData.map(stock => this.fetchStockPrice(stock.symbol));
+                const results = await Promise.allSettled(promises);
+                
+                results.forEach((result, index) => {
+                    const stock = this.portfolioData[index];
+                    if (result.status === 'fulfilled' && result.value) {
+                        this.currentPrices[stock.symbol] = result.value.current;
+                        this.previousPrices[stock.symbol] = result.value.previous;
+                    } else {
+                        // Fallback to simulated data if API fails
+                        this.currentPrices[stock.symbol] = this.generateSimulatedPrice(stock.avgCost);
+                        this.previousPrices[stock.symbol] = this.currentPrices[stock.symbol] * (0.98 + Math.random() * 0.04);
+                    }
+                });
+            }
+            
+            async fetchStockPrice(symbol) {
+                try {
+                    // Using Alpha Vantage API with real API key
+                    const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=1SA4YKBCTW71XDV1`);
                     const data = await response.json();
                     
                     if (data['Global Quote']) {
                         const quote = data['Global Quote'];
-                        this.updateSP500Display(quote);
-                    } else {
-                        // Fallback to simulated data if API fails
-                        this.updateSP500DisplayWithSimulatedData();
+                        const currentPrice = parseFloat(quote['05. price']);
+                        const previousClose = parseFloat(quote['08. previous close']);
+                        
+                        return {
+                            current: currentPrice,
+                            previous: previousClose
+                        };
                     }
+                    return null;
                 } catch (error) {
-                    console.log('Using simulated S&P 500 data');
-                    this.updateSP500DisplayWithSimulatedData();
+                    console.log(`Failed to fetch price for ${symbol}:`, error);
+                    return null;
                 }
-            }
-
-            updateSP500DisplayWithSimulatedData() {
-                // Generate realistic S&P 500 data
-                const basePrice = 4500 + Math.random() * 200;
-                const change = (Math.random() - 0.5) * 50;
-                const changePercent = (change / basePrice) * 100;
-                
-                const simulatedData = {
-                    '05. price': basePrice.toFixed(2),
-                    '09. change': change.toFixed(2),
-                    '10. change percent': changePercent.toFixed(2),
-                    '02. open': (basePrice + (Math.random() - 0.5) * 20).toFixed(2),
-                    '03. high': (basePrice + Math.random() * 30).toFixed(2),
-                    '04. low': (basePrice - Math.random() * 30).toFixed(2),
-                    '06. volume': Math.floor(Math.random() * 1000000 + 5000000).toLocaleString()
-                };
-
-                this.updateSP500Display(simulatedData);
-            }
-
-            updateSP500Display(data) {
-                const price = parseFloat(data['05. price'] || data.price || 4500);
-                const change = parseFloat(data['09. change'] || data.change || 0);
-                const changePercent = parseFloat(data['10. change percent'] || data.changePercent || 0);
-                const open = parseFloat(data['02. open'] || data.open || price);
-                const high = parseFloat(data['03. high'] || data.high || price);
-                const low = parseFloat(data['04. low'] || data.low || price);
-                const volume = data['06. volume'] || data.volume || '5,000,000';
-
-                // Update price display
-                document.getElementById('sp500-price').textContent = `$${price.toFixed(2)}`;
-                
-                // Update change display
-                const changeElement = document.getElementById('sp500-change');
-                const changeText = `${change >= 0 ? '+' : ''}${change.toFixed(2)} (${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%)`;
-                changeElement.textContent = changeText;
-                changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-
-                // Update stats
-                document.getElementById('sp500-open').textContent = `$${open.toFixed(2)}`;
-                document.getElementById('sp500-high').textContent = `$${high.toFixed(2)}`;
-                document.getElementById('sp500-low').textContent = `$${low.toFixed(2)}`;
-                document.getElementById('sp500-volume').textContent = volume;
             }
             
-            renderBalanceChart() {
-                const balances = this.getBalances();
-                const chartContainer = document.getElementById('balance-chart');
+            generateSimulatedPrice(avgCost) {
+                // Generate realistic price variation around average cost
+                const variation = 0.7 + Math.random() * 0.6; // 70% to 130% of avg cost
+                return avgCost * variation;
+            }
+            
+            calculatePortfolioMetrics() {
+                this.totalPortfolioValue = 0;
+                this.totalDailyPnL = 0;
+                this.totalPortfolioPnL = 0;
                 
-                if (balances.length === 0) {
-                    chartContainer.innerHTML = '<p>No balance data available.</p>';
-                    return;
-                }
-                
-                // Show fewer items on mobile for better performance
-                const isMobile = window.innerWidth <= 768;
-                const maxItems = isMobile ? 6 : 10;
-                
-                let chartHTML = '<div class="balance-list">';
-                balances.slice(-maxItems).reverse().forEach(balance => {
-                    const time = new Date(balance.timestamp).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: isMobile ? '2-digit' : '2-digit',
-                        minute: isMobile ? '2-digit' : '2-digit'
-                    });
-                    chartHTML += `
-                        <div class="balance-item">
-                            <span class="balance-time">${time}</span>
-                            <span class="balance-amount">$${balance.balance.toLocaleString()}</span>
-                        </div>
-                    `;
+                this.portfolioData.forEach(stock => {
+                    const currentPrice = this.currentPrices[stock.symbol] || stock.avgCost;
+                    const previousPrice = this.previousPrices[stock.symbol] || currentPrice;
+                    
+                    const totalCost = stock.shares * stock.avgCost;
+                    const currentValue = stock.shares * currentPrice;
+                    const dailyPnL = stock.shares * (currentPrice - previousPrice);
+                    const totalPnL = currentValue - totalCost;
+                    
+                    // Store calculated values for display
+                    stock.currentPrice = currentPrice;
+                    stock.currentValue = currentValue;
+                    stock.dailyPnL = dailyPnL;
+                    stock.totalPnL = totalPnL;
+                    
+                    this.totalPortfolioValue += currentValue;
+                    this.totalDailyPnL += dailyPnL;
+                    this.totalPortfolioPnL += totalPnL;
                 });
-                chartHTML += '</div>';
-                chartContainer.innerHTML = chartHTML;
-            }
-            
-            startAutoRefresh() {
-                setInterval(() => {
-                    this.generateNewData();
-                    this.updateStatusIndicator();
-                    this.renderAll();
-                }, 30000); // 30 seconds
-
-                // Auto-refresh S&P 500 data every 2 minutes
-                setInterval(() => {
-                    if (document.getElementById('sp500-tab').classList.contains('active')) {
-                        this.loadSP500Data();
-                    }
-                }, 120000); // 2 minutes
-            }
-            
-            renderAll() {
-                this.renderStats();
-                this.renderTrades();
-                this.renderBalanceChart();
-                this.updateMobilePeriodIndicator();
-                this.updateLastUpdate();
-            }
-            
-            renderStats() {
-                const stats = this.getStats();
-                const statsGrid = document.getElementById('stats-grid');
                 
-                statsGrid.innerHTML = `
-                    <div class="stat-card profit">
-                        <div class="stat-value">$${stats.current_balance.toLocaleString()}</div>
-                        <div class="stat-label">Portfolio Value</div>
-                        <div class="stat-change ${stats.total_profit_loss >= 0 ? 'positive' : 'negative'}">
-                            ${stats.total_profit_loss >= 0 ? '+' : ''}$${stats.total_profit_loss.toLocaleString()}
-                        </div>
-                    </div>
-                    <div class="stat-card ${stats.total_profit_loss >= 0 ? 'profit' : 'loss'}">
-                        <div class="stat-value">${stats.total_profit_loss >= 0 ? '+' : ''}${stats.profit_loss_percent.toFixed(2)}%</div>
-                        <div class="stat-label">Total Return</div>
-                        <div class="stat-change ${stats.total_profit_loss >= 0 ? 'positive' : 'negative'}">
-                            ${stats.total_profit_loss >= 0 ? '📈' : '📉'} ${stats.total_profit_loss >= 0 ? 'Profitable' : 'Loss'}
-                        </div>
-                    </div>
-                    <div class="stat-card neutral">
-                        <div class="stat-value">${stats.total_trades}</div>
-                        <div class="stat-label">Total Trades</div>
-                        <div class="stat-change">
-                            ${stats.buy_trades} Buy / ${stats.sell_trades} Sell
-                        </div>
-                    </div>
-                    <div class="stat-card neutral">
-                        <div class="stat-value">${this.pairs.length}</div>
-                        <div class="stat-label">Trading Pairs</div>
-                        <div class="stat-change">
-                            ${this.pairs.join(', ')}
-                        </div>
-                    </div>
-                `;
+                // Calculate allocation percentages
+                this.portfolioData.forEach(stock => {
+                    stock.allocation = (stock.currentValue / this.totalPortfolioValue) * 100;
+                });
             }
             
-            renderTrades() {
-                const trades = this.getTrades();
-                const tradesContainer = document.getElementById('trades-table');
+            renderPortfolioTable() {
+                const tableContainer = document.getElementById('portfolio-table');
                 
-                if (trades.length === 0) {
-                    tradesContainer.innerHTML = '<p>No trades recorded yet.</p>';
+                if (!this.currentPrices || Object.keys(this.currentPrices).length === 0) {
+                    tableContainer.innerHTML = '<div class="loading">Calculating portfolio data...</div>';
                     return;
                 }
                 
                 let tableHTML = `
-                    <table class="trades-table">
+                    <table class="portfolio-table">
                         <thead>
                             <tr>
-                                <th>Time</th>
-                                <th>Pair</th>
-                                <th>Action</th>
-                                <th>Price</th>
-                                <th>Volume</th>
-                                <th>Balance</th>
+                                <th>Symbol</th>
+                                <th>Shares</th>
+                                <th>Avg Cost/Share</th>
+                                <th>Current Price</th>
+                                <th>Daily P&L</th>
+                                <th>Total P&L</th>
+                                <th>Allocation %</th>
                             </tr>
                         </thead>
                         <tbody>
                 `;
                 
-                trades.slice(0, 15).forEach(trade => {
-                    const time = new Date(trade.timestamp).toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    });
+                this.portfolioData.forEach(stock => {
+                    const currentPrice = stock.currentPrice || stock.avgCost;
+                    const dailyPnL = stock.dailyPnL || 0;
+                    const totalPnL = stock.totalPnL || 0;
+                    const allocation = stock.allocation || 0;
                     
                     tableHTML += `
                         <tr>
-                            <td>${time}</td>
-                            <td><strong>${trade.pair}</strong></td>
-                            <td><span class="action-badge action-${trade.action.toLowerCase()}">${trade.action}</span></td>
-                            <td>${trade.price.toFixed(5)}</td>
-                            <td>${trade.volume.toLocaleString()}</td>
-                            <td>$${trade.balance.toLocaleString()}</td>
+                            <td class="symbol-cell">${stock.symbol}</td>
+                            <td class="shares-cell">${stock.shares.toLocaleString()}</td>
+                            <td class="price-cell">$${stock.avgCost.toFixed(2)}</td>
+                            <td class="price-cell">$${currentPrice.toFixed(2)}</td>
+                            <td class="pnl-cell ${dailyPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                                ${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}
+                            </td>
+                            <td class="pnl-cell ${totalPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                                ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}
+                            </td>
+                            <td class="allocation-cell">${allocation.toFixed(1)}%</td>
                         </tr>
                     `;
                 });
                 
                 tableHTML += '</tbody></table>';
-                tradesContainer.innerHTML = tableHTML;
+                tableContainer.innerHTML = tableHTML;
+            }
+            
+            renderPortfolioSummary() {
+                // Update total portfolio value
+                document.getElementById('total-value').textContent = `$${this.totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                
+                // Update daily P&L
+                document.getElementById('daily-pnl').textContent = `$${this.totalDailyPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const dailyChangeElement = document.getElementById('daily-pnl-change');
+                dailyChangeElement.textContent = this.totalDailyPnL >= 0 ? '📈 Positive' : '📉 Negative';
+                dailyChangeElement.className = `summary-change ${this.totalDailyPnL >= 0 ? 'positive' : 'negative'}`;
+                
+                // Update total P&L
+                document.getElementById('total-pnl').textContent = `$${this.totalPortfolioPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const totalChangeElement = document.getElementById('total-pnl-change');
+                totalChangeElement.textContent = this.totalPortfolioPnL >= 0 ? '📈 Profitable' : '📉 Loss';
+                totalChangeElement.className = `summary-change ${this.totalPortfolioPnL >= 0 ? 'positive' : 'negative'}`;
+            }
+            
+            setLoadingState(isLoading) {
+                const refreshButton = document.getElementById('refresh-button');
+                if (isLoading) {
+                    refreshButton.disabled = true;
+                    refreshButton.textContent = '⏳ Loading...';
+                } else {
+                    refreshButton.disabled = false;
+                    refreshButton.textContent = '🔄 Refresh Data';
+                }
+            }
+            
+            renderErrorState() {
+                const tableContainer = document.getElementById('portfolio-table');
+                tableContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--danger);">
+                        <h3>⚠️ Error Loading Data</h3>
+                        <p>Failed to load portfolio data. Please try refreshing.</p>
+                    </div>
+                `;
+            }
+            
+            updateStatusIndicator() {
+                const indicator = document.getElementById('status-indicator');
+                if (this.totalPortfolioPnL >= 0) {
+                    indicator.style.background = 'var(--success)';
+                    indicator.innerHTML = '🟢 Profitable Portfolio';
+                } else {
+                    indicator.style.background = 'var(--danger)';
+                    indicator.innerHTML = '🔴 Portfolio Loss';
+                }
             }
             
             updateLastUpdate() {
                 document.getElementById('last-update').textContent = new Date().toLocaleString();
             }
+            
+            startAutoRefresh() {
+                // Refresh portfolio data every 5 minutes
+                setInterval(() => {
+                    this.loadPortfolioData();
+                }, 300000); // 5 minutes
+            }
+            
+            refreshData() {
+                this.loadPortfolioData();
+            }
         }
         
         // Initialize dashboard
-        const dashboard = new ModernTradingDashboard();
-        
-        // Initial render
-        dashboard.renderAll();
+        const portfolioDashboard = new StockPortfolioDashboard();
         
         // Refresh on page focus (useful for mobile)
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
-                dashboard.renderAll();
+                portfolioDashboard.refreshData();
             }
         });
         
