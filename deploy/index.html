@@ -482,26 +482,118 @@
 
         /* Status Indicator */
         .status-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--success);
-            color: var(--dark);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            z-index: 1000;
+            display: none; /* Hidden - removed from dashboard */
+        }
+
+        /* Column Reorder Controls */
+        .column-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
             box-shadow: var(--shadow-lg);
         }
 
-        @media (max-width: 767px) {
-            .status-indicator {
-                top: 16px;
-                right: 16px;
-                font-size: 0.7rem;
-                padding: 6px 12px;
-            }
+        .column-controls h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .column-controls h3::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--gradient-secondary);
+            border-radius: 2px;
+        }
+
+        .column-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .column-item {
+            background: var(--dark-lighter);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: move;
+            user-select: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-item:hover {
+            background: var(--border);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .column-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .column-item .drag-handle {
+            cursor: move;
+            font-size: 0.875rem;
+            opacity: 0.7;
+        }
+
+        .column-item .column-name {
+            font-weight: 500;
+        }
+
+        .column-item .column-visibility {
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+        }
+
+        .column-item .column-visibility.visible {
+            background: var(--success);
+            color: var(--dark);
+        }
+
+        .column-item .column-visibility.hidden {
+            background: var(--danger);
+            color: var(--dark);
+        }
+
+        .column-item .column-visibility:hover {
+            transform: scale(1.1);
+        }
+
+        .reset-button {
+            background: var(--gradient-secondary);
+            color: var(--dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         /* Mobile Optimizations */
@@ -624,10 +716,7 @@
     </style>
 </head>
 <body>
-    <!-- Status Indicator -->
-    <div class="status-indicator" id="status-indicator">
-        🟢 Live Portfolio
-    </div>
+    <!-- Status Indicator - Removed -->
 
     <div class="container">
         <!-- Header -->
@@ -650,6 +739,17 @@
                 <span class="error-text" id="error-text">Error message will appear here</span>
                 <button class="error-close" onclick="portfolioDashboard.hideErrorMessage()">×</button>
             </div>
+        </div>
+
+        <!-- Column Controls -->
+        <div class="column-controls">
+            <h3>🎛️ Customize Table Columns</h3>
+            <div class="column-list" id="column-list">
+                <!-- Column items will be generated here -->
+            </div>
+            <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
+                🔄 Reset to Default
+            </button>
         </div>
 
         <!-- Portfolio Summary -->
@@ -728,14 +828,25 @@
                 this.sortColumn = null;
                 this.sortDirection = 'asc';
                 
+                // Column configuration
+                this.columns = [
+                    { key: 'symbol', name: 'Symbol', type: 'string', visible: true, order: 0 },
+                    { key: 'shares', name: 'Shares', type: 'number', visible: true, order: 1 },
+                    { key: 'avgCost', name: 'Avg Cost/Share', type: 'number', visible: true, order: 2 },
+                    { key: 'currentPrice', name: 'Current Price', type: 'number', visible: true, order: 3 },
+                    { key: 'dailyPnL', name: 'Daily P&L', type: 'number', visible: true, order: 4 },
+                    { key: 'totalPnL', name: 'Total P&L', type: 'number', visible: true, order: 5 },
+                    { key: 'allocation', name: 'Allocation %', type: 'number', visible: true, order: 6 }
+                ];
+                
                 this.init();
             }
             
             init() {
                 this.loadPortfolioData();
                 this.startAutoRefresh();
-                this.updateStatusIndicator();
                 this.setupTableSorting();
+                this.setupColumnControls();
             }
             
             async loadPortfolioData() {
@@ -886,18 +997,24 @@
                     return;
                 }
                 
+                // Get visible columns sorted by order
+                const visibleColumns = this.columns
+                    .filter(col => col.visible)
+                    .sort((a, b) => a.order - b.order);
+                
                 let tableHTML = `
                     <div class="table-container">
                         <table class="portfolio-table">
                             <thead>
                                 <tr>
-                                    <th class="sortable" data-sort="symbol" data-sort-type="string">Symbol</th>
-                                    <th class="sortable" data-sort="shares" data-sort-type="number">Shares</th>
-                                    <th class="sortable" data-sort="avgCost" data-sort-type="number">Avg Cost/Share</th>
-                                    <th class="sortable" data-sort="currentPrice" data-sort-type="number">Current Price</th>
-                                    <th class="sortable" data-sort="dailyPnL" data-sort-type="number">Daily P&L</th>
-                                    <th class="sortable" data-sort="totalPnL" data-sort-type="number">Total P&L</th>
-                                    <th class="sortable" data-sort="allocation" data-sort-type="number">Allocation %</th>
+                `;
+                
+                // Render headers based on column configuration
+                visibleColumns.forEach(column => {
+                    tableHTML += `<th class="sortable" data-sort="${column.key}" data-sort-type="${column.type}">${column.name}</th>`;
+                });
+                
+                tableHTML += `
                                 </tr>
                             </thead>
                             <tbody>
@@ -909,21 +1026,48 @@
                     const totalPnL = stock.totalPnL || 0;
                     const allocation = stock.allocation || 0;
                     
-                    tableHTML += `
-                        <tr>
-                            <td class="symbol-cell">${stock.symbol}</td>
-                            <td class="shares-cell">${stock.shares.toLocaleString()}</td>
-                            <td class="price-cell">$${stock.avgCost.toFixed(2)}</td>
-                            <td class="price-cell">$${currentPrice.toFixed(2)}</td>
-                            <td class="pnl-cell ${dailyPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}">
-                                ${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}
-                            </td>
-                            <td class="pnl-cell ${totalPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}">
-                                ${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}
-                            </td>
-                            <td class="allocation-cell">${allocation.toFixed(1)}%</td>
-                        </tr>
-                    `;
+                    tableHTML += '<tr>';
+                    
+                    // Render cells based on column configuration
+                    visibleColumns.forEach(column => {
+                        let cellContent = '';
+                        let cellClass = '';
+                        
+                        switch (column.key) {
+                            case 'symbol':
+                                cellContent = stock.symbol;
+                                cellClass = 'symbol-cell';
+                                break;
+                            case 'shares':
+                                cellContent = stock.shares.toLocaleString();
+                                cellClass = 'shares-cell';
+                                break;
+                            case 'avgCost':
+                                cellContent = `$${stock.avgCost.toFixed(2)}`;
+                                cellClass = 'price-cell';
+                                break;
+                            case 'currentPrice':
+                                cellContent = `$${currentPrice.toFixed(2)}`;
+                                cellClass = 'price-cell';
+                                break;
+                            case 'dailyPnL':
+                                cellContent = `${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`;
+                                cellClass = `pnl-cell ${dailyPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+                                break;
+                            case 'totalPnL':
+                                cellContent = `${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`;
+                                cellClass = `pnl-cell ${totalPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+                                break;
+                            case 'allocation':
+                                cellContent = `${allocation.toFixed(1)}%`;
+                                cellClass = 'allocation-cell';
+                                break;
+                        }
+                        
+                        tableHTML += `<td class="${cellClass}">${cellContent}</td>`;
+                    });
+                    
+                    tableHTML += '</tr>';
                 });
                 
                 tableHTML += '</tbody></table></div>';
@@ -986,15 +1130,106 @@
                 `;
             }
             
-            updateStatusIndicator() {
-                const indicator = document.getElementById('status-indicator');
-                if (this.totalPortfolioPnL >= 0) {
-                    indicator.style.background = 'var(--success)';
-                    indicator.innerHTML = '🟢 Profitable Portfolio';
-                } else {
-                    indicator.style.background = 'var(--danger)';
-                    indicator.innerHTML = '🔴 Portfolio Loss';
+            setupColumnControls() {
+                this.renderColumnControls();
+                this.setupDragAndDrop();
+            }
+            
+            renderColumnControls() {
+                const columnList = document.getElementById('column-list');
+                if (!columnList) return;
+                
+                // Sort columns by current order
+                const sortedColumns = [...this.columns].sort((a, b) => a.order - b.order);
+                
+                columnList.innerHTML = sortedColumns.map(column => `
+                    <div class="column-item" data-column-key="${column.key}" draggable="true">
+                        <span class="drag-handle">⋮⋮</span>
+                        <span class="column-name">${column.name}</span>
+                        <span class="column-visibility ${column.visible ? 'visible' : 'hidden'}" 
+                              onclick="portfolioDashboard.toggleColumnVisibility('${column.key}')">
+                            ${column.visible ? '👁️' : '🙈'}
+                        </span>
+                    </div>
+                `).join('');
+            }
+            
+            setupDragAndDrop() {
+                const columnList = document.getElementById('column-list');
+                if (!columnList) return;
+                
+                let draggedItem = null;
+                
+                columnList.addEventListener('dragstart', (e) => {
+                    draggedItem = e.target;
+                    e.target.classList.add('dragging');
+                });
+                
+                columnList.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                });
+                
+                columnList.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const afterElement = this.getDragAfterElement(columnList, e.clientX);
+                    if (afterElement == null) {
+                        columnList.appendChild(draggedItem);
+                    } else {
+                        columnList.insertBefore(draggedItem, afterElement);
+                    }
+                });
+                
+                columnList.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.updateColumnOrder();
+                });
+            }
+            
+            getDragAfterElement(container, x) {
+                const draggableElements = [...container.querySelectorAll('.column-item:not(.dragging)')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = x - box.left - box.width / 2;
+                    
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+            
+            updateColumnOrder() {
+                const columnItems = document.querySelectorAll('.column-item');
+                columnItems.forEach((item, index) => {
+                    const columnKey = item.dataset.columnKey;
+                    const column = this.columns.find(c => c.key === columnKey);
+                    if (column) {
+                        column.order = index;
+                    }
+                });
+                
+                // Re-render table with new column order
+                this.renderPortfolioTable();
+            }
+            
+            toggleColumnVisibility(columnKey) {
+                const column = this.columns.find(c => c.key === columnKey);
+                if (column) {
+                    column.visible = !column.visible;
+                    this.renderColumnControls();
+                    this.renderPortfolioTable();
                 }
+            }
+            
+            resetColumnOrder() {
+                this.columns.forEach((column, index) => {
+                    column.order = index;
+                    column.visible = true;
+                });
+                this.renderColumnControls();
+                this.renderPortfolioTable();
             }
             
             updateLastUpdate() {
