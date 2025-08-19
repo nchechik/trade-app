@@ -125,7 +125,7 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            gap: 12px;
             margin-bottom: 32px;
         }
 
@@ -140,11 +140,12 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 20px;
+            padding: 16px;
             text-align: center;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            min-width: 0; /* Prevent overflow */
         }
 
         .stat-card::before {
@@ -176,24 +177,28 @@
         }
 
         .stat-value {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 8px;
             color: var(--text-primary);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .stat-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            line-height: 1.2;
         }
 
         .stat-change {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 600;
             margin-top: 8px;
+            line-height: 1.2;
         }
 
         .stat-change.positive {
@@ -222,8 +227,9 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 24px;
+            padding: 20px;
             box-shadow: var(--shadow-lg);
+            overflow: hidden; /* Prevent content overflow */
         }
 
         .section h2 {
@@ -266,8 +272,14 @@
         }
 
         .chart-period {
-            display: flex;
+            display: none; /* Hide on mobile by default */
             gap: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-period {
+                display: flex; /* Show on desktop */
+            }
         }
 
         .period-btn {
@@ -321,6 +333,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
+            overflow-x: auto; /* Allow horizontal scroll on mobile */
         }
 
         .trades-table th {
@@ -333,6 +346,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-bottom: 1px solid var(--border);
+            white-space: nowrap; /* Prevent text wrapping in headers */
         }
 
         .trades-table td {
@@ -352,6 +366,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .action-buy {
@@ -376,32 +391,99 @@
         @media (max-width: 767px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
+                gap: 8px;
             }
 
             .stat-card {
-                padding: 16px;
+                padding: 12px;
+                min-height: 80px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
             }
 
             .stat-value {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
+                margin-bottom: 4px;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
+                line-height: 1.1;
+            }
+
+            .stat-change {
+                font-size: 0.7rem;
+                margin-top: 4px;
             }
 
             .section {
-                padding: 20px;
+                padding: 16px;
+                margin: 0 -8px; /* Negative margin to extend to edges */
+                border-radius: 16px;
             }
 
             .trades-table {
                 font-size: 0.75rem;
+                margin: 0 -16px; /* Negative margin to extend table */
             }
 
             .trades-table th,
             .trades-table td {
                 padding: 12px 8px;
+                font-size: 0.7rem;
             }
 
             .balance-list {
                 max-height: 200px;
+            }
+
+            .balance-chart {
+                padding: 16px;
+                margin: 0 -16px 20px -16px; /* Extend to section edges */
+            }
+
+            .chart-header {
+                margin-bottom: 12px;
+            }
+
+            .chart-title {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Extra small mobile devices */
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px;
+            }
+
+            .stats-grid {
+                gap: 6px;
+            }
+
+            .stat-card {
+                padding: 10px;
+                min-height: 70px;
+            }
+
+            .stat-value {
+                font-size: 1.1rem;
+            }
+
+            .stat-label {
+                font-size: 0.6rem;
+            }
+
+            .section {
+                padding: 14px;
+                margin: 0 -4px;
+            }
+
+            .trades-table th,
+            .trades-table td {
+                padding: 10px 6px;
+                font-size: 0.65rem;
             }
         }
 
@@ -520,6 +602,36 @@
                 padding: 6px 12px;
             }
         }
+
+        /* Mobile-friendly period indicator */
+        .mobile-period-indicator {
+            display: none;
+            background: var(--dark-lighter);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 767px) {
+            .mobile-period-indicator {
+                display: block;
+            }
+        }
+
+        .mobile-period-indicator .period-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .mobile-period-indicator .period-value {
+            font-size: 1rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -552,6 +664,13 @@
             <!-- Balance History Section -->
             <div class="section">
                 <h2>💰 Portfolio Performance</h2>
+                
+                <!-- Mobile Period Indicator -->
+                <div class="mobile-period-indicator">
+                    <div class="period-text">Viewing Period</div>
+                    <div class="period-value" id="mobile-period-value">7 Days</div>
+                </div>
+                
                 <div class="balance-chart">
                     <div class="chart-header">
                         <div class="chart-title">Balance History</div>
@@ -617,15 +736,19 @@
             }
             
             setupEventListeners() {
-                // Period buttons
-                document.querySelectorAll('.period-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                        e.target.classList.add('active');
-                        this.period = e.target.dataset.period;
-                        this.updateBalanceChart();
+                // Period buttons - only add listeners if they exist (desktop)
+                const periodButtons = document.querySelectorAll('.period-btn');
+                if (periodButtons.length > 0) {
+                    periodButtons.forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            this.period = e.target.dataset.period;
+                            this.updateBalanceChart();
+                            this.updateMobilePeriodIndicator();
+                        });
                     });
-                });
+                }
             }
             
             generateInitialData() {
@@ -761,6 +884,15 @@
                 this.renderBalanceChart();
             }
             
+            updateMobilePeriodIndicator() {
+                const mobileIndicator = document.getElementById('mobile-period-value');
+                if (mobileIndicator) {
+                    const periodText = this.period === '7d' ? '7 Days' : 
+                                     this.period === '30d' ? '30 Days' : '90 Days';
+                    mobileIndicator.textContent = periodText;
+                }
+            }
+            
             renderBalanceChart() {
                 const balances = this.getBalances();
                 const chartContainer = document.getElementById('balance-chart');
@@ -770,13 +902,17 @@
                     return;
                 }
                 
+                // Show fewer items on mobile for better performance
+                const isMobile = window.innerWidth <= 768;
+                const maxItems = isMobile ? 6 : 10;
+                
                 let chartHTML = '<div class="balance-list">';
-                balances.slice(-10).reverse().forEach(balance => {
+                balances.slice(-maxItems).reverse().forEach(balance => {
                     const time = new Date(balance.timestamp).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        hour: isMobile ? '2-digit' : '2-digit',
+                        minute: isMobile ? '2-digit' : '2-digit'
                     });
                     chartHTML += `
                         <div class="balance-item">
@@ -801,6 +937,7 @@
                 this.renderStats();
                 this.renderTrades();
                 this.renderBalanceChart();
+                this.updateMobilePeriodIndicator();
                 this.updateLastUpdate();
             }
             
