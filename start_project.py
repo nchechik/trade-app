@@ -4,31 +4,10 @@ Forex Trading Bot Project Starter
 Master script to launch both the trading bot and dashboard.
 """
 
-import os
-import sys
 import subprocess
+import sys
 import time
 import threading
-from pathlib import Path
-
-def check_environment():
-    """Check if environment variables are set up."""
-    api_key = os.getenv('OANDA_API_KEY')
-    account_id = os.getenv('OANDA_ACCOUNT_ID')
-    
-    if not api_key or not account_id:
-        print("❌ Environment variables not set!")
-        print("\nPlease set up your OANDA credentials:")
-        print("1. Copy .env.example to .env")
-        print("2. Edit .env with your OANDA credentials")
-        print("3. Or export them:")
-        print("   export OANDA_API_KEY='your_api_key'")
-        print("   export OANDA_ACCOUNT_ID='your_account_id'")
-        print("\nGet credentials from: https://www.oanda.com/demo-account/")
-        return False
-    
-    print("✅ Environment variables configured")
-    return True
 
 def install_dependencies():
     """Install required Python packages."""
@@ -67,12 +46,10 @@ def start_dashboard():
 
 def main():
     """Main function to start the entire project."""
-    print("🚀 Forex Trading Bot Project Starter")
+    print("🚀 Forex Trading Bot Project Starter (Public API)")
     print("=" * 50)
-    
-    # Check environment
-    if not check_environment():
-        sys.exit(1)
+    print("✅ No registration required - using free public Forex API")
+    print("=" * 50)
     
     # Install dependencies
     if not install_dependencies():

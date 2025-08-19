@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-Forex Trading Bot
+Simplified Forex Trading Bot
 Uses public Forex API to fetch live exchange rates and implements simulated trading.
-Runs continuously, fetching data every minute and making trading decisions.
-No registration or API keys required - completely free to use.
+Minimal dependencies - works with basic Python installation.
 """
 
 import time
 import sqlite3
 import logging
 from datetime import datetime
-from typing import Dict, Optional
 import urllib.request
 import json
 import random
@@ -26,9 +24,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class ForexTradingBot:
+class SimpleForexTradingBot:
     def __init__(self):
-        """Initialize the trading bot with public Forex API and database."""
+        """Initialize the simplified trading bot."""
         # Public Forex API - no registration required
         self.api_url = "https://api.frankfurter.app/latest"
         
@@ -47,7 +45,7 @@ class ForexTradingBot:
         # Track trade count for balance simulation
         self.trade_count = 0
         
-        logger.info("Forex Trading Bot initialized successfully")
+        logger.info("Simple Forex Trading Bot initialized successfully")
         logger.info(f"Using public API: {self.api_url}")
         logger.info(f"Simulated starting balance: ${self.simulated_balance:,.2f}")
     
@@ -91,8 +89,8 @@ class ForexTradingBot:
             logger.error(f"Database initialization failed: {e}")
             raise
     
-    def get_current_prices(self) -> Dict[str, float]:
-        """Get current exchange rates from public Forex API."""
+    def get_current_prices(self):
+        """Get current exchange rates from public Forex API using urllib."""
         try:
             # Fetch USD rates for EUR and GBP
             url = f"{self.api_url}?from=USD&to=EUR,GBP"
@@ -116,7 +114,7 @@ class ForexTradingBot:
             logger.error(f"Failed to fetch exchange rates: {e}")
             return {}
     
-    def simulate_trade_execution(self, pair: str, action: str, price: float) -> float:
+    def simulate_trade_execution(self, pair, action, price):
         """Simulate trade execution and update balance."""
         # Simple simulation: each trade affects balance by a small amount
         trade_amount = 100.0  # Fixed trade size
@@ -142,7 +140,7 @@ class ForexTradingBot:
         
         return self.simulated_balance
     
-    def execute_trade(self, pair: str, action: str, price: float):
+    def execute_trade(self, pair, action, price):
         """Execute a simulated trade and log it to the database."""
         try:
             # Simulate the trade and get new balance
@@ -225,7 +223,7 @@ class ForexTradingBot:
     
     def run(self):
         """Main loop - run the trading bot continuously."""
-        logger.info("Starting Forex Trading Bot with public API...")
+        logger.info("Starting Simple Forex Trading Bot with public API...")
         logger.info("No registration required - using free public Forex rates")
         
         try:
@@ -246,7 +244,7 @@ class ForexTradingBot:
 def main():
     """Main function to run the trading bot."""
     try:
-        bot = ForexTradingBot()
+        bot = SimpleForexTradingBot()
         bot.run()
     except Exception as e:
         logger.error(f"Failed to start trading bot: {e}")

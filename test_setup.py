@@ -5,7 +5,6 @@ Test script to verify the project is properly configured.
 """
 
 import sys
-import os
 import importlib
 import sqlite3
 from pathlib import Path
@@ -18,8 +17,7 @@ def test_imports():
         'streamlit',
         'pandas', 
         'plotly',
-        'requests',
-        'dotenv'
+        'requests'
     ]
     
     failed_imports = []
@@ -40,21 +38,27 @@ def test_imports():
     print("✅ All modules imported successfully")
     return True
 
-def test_environment():
-    """Test if environment variables are set."""
-    print("\n🔐 Testing environment variables...")
+def test_public_api():
+    """Test if the public Forex API is accessible."""
+    print("\n🌐 Testing public Forex API...")
     
-    api_key = os.getenv('OANDA_API_KEY')
-    account_id = os.getenv('OANDA_ACCOUNT_ID')
-    
-    if api_key and account_id:
-        print("  ✅ OANDA_API_KEY: Set")
-        print("  ✅ OANDA_ACCOUNT_ID: Set")
-        return True
-    else:
-        print("  ❌ OANDA_API_KEY: Not set")
-        print("  ❌ OANDA_ACCOUNT_ID: Not set")
-        print("\n💡 Set up your .env file with OANDA credentials")
+    try:
+        import requests
+        response = requests.get("https://api.exchangerate.host/latest?base=USD&symbols=EUR,GBP")
+        response.raise_for_status()
+        
+        data = response.json()
+        if 'rates' in data and 'EUR' in data['rates'] and 'GBP' in data['rates']:
+            print("  ✅ Public API accessible")
+            print(f"  ✅ EUR rate: {data['rates']['EUR']}")
+            print(f"  ✅ GBP rate: {data['rates']['GBP']}")
+            return True
+        else:
+            print("  ❌ API response format unexpected")
+            return False
+            
+    except Exception as e:
+        print(f"  ❌ API test failed: {e}")
         return False
 
 def test_database():
@@ -102,7 +106,6 @@ def test_files():
         'bot.py',
         'dashboard.py', 
         'requirements.txt',
-        '.env.example',
         'README.md'
     ]
     
@@ -124,13 +127,13 @@ def test_files():
 
 def main():
     """Run all tests."""
-    print("🚀 Forex Trading Bot Setup Test")
+    print("🚀 Forex Trading Bot Setup Test (Public API)")
     print("=" * 50)
     
     tests = [
         ("File Structure", test_files),
         ("Module Imports", test_imports),
-        ("Environment Variables", test_environment),
+        ("Public Forex API", test_public_api),
         ("Database", test_database)
     ]
     
@@ -163,6 +166,7 @@ def main():
         print("\n📊 Or run components separately:")
         print("   python run_bot.py      # Trading bot")
         print("   python run_dashboard.py # Dashboard")
+        print("\n✅ No registration required - using free public Forex API!")
     else:
         print(f"\n⚠️  {total - passed} test(s) failed. Please fix the issues above.")
         return 1

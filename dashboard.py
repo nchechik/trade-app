@@ -176,7 +176,7 @@ class TradingDashboard:
     
     def run_dashboard(self):
         """Main dashboard function."""
-        st.title("📈 Forex Trading Bot Dashboard")
+        st.title("📈 Forex Trading Bot Dashboard (Public API)")
         st.markdown("---")
         
         # Auto-refresh every minute
@@ -285,8 +285,8 @@ class TradingDashboard:
         st.markdown(
             """
             <div style='text-align: center; color: #666;'>
-                <p>🤖 Forex Trading Bot Dashboard | Auto-refreshes every minute</p>
-                <p>Built with Streamlit and Python</p>
+                <p>🤖 Forex Trading Bot Dashboard (Public API) | Auto-refreshes every minute</p>
+                <p>Built with Streamlit and Python | No registration required</p>
             </div>
             """,
             unsafe_allow_html=True
