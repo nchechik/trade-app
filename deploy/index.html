@@ -277,7 +277,7 @@
         .portfolio-table th {
             background: var(--dark-lighter);
             padding: 16px 12px;
-            text-align: left;
+            text-align: center;
             font-size: 0.75rem;
             font-weight: 600;
             color: var(--text-secondary);
@@ -288,6 +288,45 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .portfolio-table th:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+
+        .portfolio-table th.sortable {
+            position: relative;
+        }
+
+        .portfolio-table th.sortable::after {
+            content: '↕';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+
+        .portfolio-table th.sortable:hover::after {
+            opacity: 1;
+        }
+
+        .portfolio-table th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+            color: var(--primary);
+        }
+
+        .portfolio-table th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+            color: var(--primary);
         }
 
         .portfolio-table td {
@@ -295,6 +334,7 @@
             border-bottom: 1px solid var(--border);
             font-size: 0.875rem;
             white-space: nowrap;
+            text-align: center;
         }
 
         .portfolio-table tr:hover {
@@ -304,6 +344,7 @@
         .symbol-cell {
             font-weight: 600;
             color: var(--primary);
+            text-align: left;
         }
 
         .shares-cell {
@@ -500,6 +541,11 @@
                 font-size: 0.65rem;
             }
 
+            .portfolio-table th.sortable::after {
+                right: 4px;
+                font-size: 0.6rem;
+            }
+
             .section-header {
                 flex-direction: column;
                 align-items: flex-start;
@@ -679,6 +725,8 @@
                 this.totalPortfolioValue = 0;
                 this.totalDailyPnL = 0;
                 this.totalPortfolioPnL = 0;
+                this.sortColumn = null;
+                this.sortDirection = 'asc';
                 
                 this.init();
             }
@@ -687,6 +735,7 @@
                 this.loadPortfolioData();
                 this.startAutoRefresh();
                 this.updateStatusIndicator();
+                this.setupTableSorting();
             }
             
             async loadPortfolioData() {
@@ -842,13 +891,13 @@
                         <table class="portfolio-table">
                             <thead>
                                 <tr>
-                                    <th>Symbol</th>
-                                    <th>Shares</th>
-                                    <th>Avg Cost/Share</th>
-                                    <th>Current Price</th>
-                                    <th>Daily P&L</th>
-                                    <th>Total P&L</th>
-                                    <th>Allocation %</th>
+                                    <th class="sortable" data-sort="symbol" data-sort-type="string">Symbol</th>
+                                    <th class="sortable" data-sort="shares" data-sort-type="number">Shares</th>
+                                    <th class="sortable" data-sort="avgCost" data-sort-type="number">Avg Cost/Share</th>
+                                    <th class="sortable" data-sort="currentPrice" data-sort-type="number">Current Price</th>
+                                    <th class="sortable" data-sort="dailyPnL" data-sort-type="number">Daily P&L</th>
+                                    <th class="sortable" data-sort="totalPnL" data-sort-type="number">Total P&L</th>
+                                    <th class="sortable" data-sort="allocation" data-sort-type="number">Allocation %</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -978,6 +1027,64 @@
                 if (errorElement) {
                     errorElement.style.display = 'none';
                 }
+            }
+            
+            setupTableSorting() {
+                // Add click event listeners to all sortable headers
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('sortable')) {
+                        const column = e.target.dataset.sort;
+                        const sortType = e.target.dataset.sortType;
+                        this.sortTable(column, sortType);
+                    }
+                });
+            }
+            
+            sortTable(column, sortType) {
+                // Clear previous sort indicators
+                document.querySelectorAll('th.sortable').forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                });
+                
+                // Update sort direction
+                if (this.sortColumn === column) {
+                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortColumn = column;
+                    this.sortDirection = 'asc';
+                }
+                
+                // Add sort indicator to current column
+                const currentHeader = document.querySelector(`th[data-sort="${column}"]`);
+                if (currentHeader) {
+                    currentHeader.classList.add(`sort-${this.sortDirection}`);
+                }
+                
+                // Sort the portfolio data
+                this.portfolioData.sort((a, b) => {
+                    let aValue = a[column];
+                    let bValue = b[column];
+                    
+                    // Handle special cases
+                    if (column === 'symbol') {
+                        aValue = aValue.toLowerCase();
+                        bValue = bValue.toLowerCase();
+                    }
+                    
+                    if (sortType === 'number') {
+                        aValue = parseFloat(aValue) || 0;
+                        bValue = parseFloat(bValue) || 0;
+                    }
+                    
+                    let comparison = 0;
+                    if (aValue > bValue) comparison = 1;
+                    if (aValue < bValue) comparison = -1;
+                    
+                    return this.sortDirection === 'asc' ? comparison : -comparison;
+                });
+                
+                // Re-render the table with sorted data
+                this.renderPortfolioTable();
             }
         }
         
