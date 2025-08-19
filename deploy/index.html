@@ -1224,8 +1224,8 @@
 
             async loadSP500Data() {
                 try {
-                    // Using Alpha Vantage API for S&P 500 data (free tier)
-                    const response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=demo');
+                    // Using Alpha Vantage API for S&P 500 data with real API key
+                    const response = await fetch('https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey=1SA4YKBCTW71XDV1');
                     const data = await response.json();
                     
                     if (data['Global Quote']) {
