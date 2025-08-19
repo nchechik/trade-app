@@ -188,6 +188,21 @@
             color: var(--danger);
         }
 
+        .summary-percentage {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 8px;
+            opacity: 0.8;
+        }
+
+        .summary-percentage.positive {
+            color: var(--success);
+        }
+
+        .summary-percentage.negative {
+            color: var(--danger);
+        }
+
         /* Portfolio Table */
         .portfolio-section {
             background: var(--card-bg);
@@ -380,12 +395,16 @@
             .portfolio-table {
                 font-size: 0.75rem;
                 margin: 0 -16px;
+                width: 100%;
+                min-width: 100%;
+                overflow-x: auto;
             }
 
             .portfolio-table th,
             .portfolio-table td {
-                padding: 12px 8px;
-                font-size: 0.7rem;
+                padding: 12px 6px;
+                font-size: 0.65rem;
+                white-space: nowrap;
             }
 
             .section-header {
@@ -423,10 +442,15 @@
                 margin: 0 -4px 16px -4px;
             }
 
+            .portfolio-table {
+                margin: 0 -8px;
+                font-size: 0.6rem;
+            }
+
             .portfolio-table th,
             .portfolio-table td {
-                padding: 10px 6px;
-                font-size: 0.65rem;
+                padding: 8px 4px;
+                font-size: 0.6rem;
             }
         }
 
@@ -481,16 +505,19 @@
             <div class="summary-card total-value">
                 <div class="summary-value" id="total-value">$--</div>
                 <div class="summary-label">Total Portfolio Value</div>
+                <div class="summary-percentage" id="total-value-change">--</div>
             </div>
             <div class="summary-card daily-pnl">
                 <div class="summary-value" id="daily-pnl">$--</div>
                 <div class="summary-label">Daily P&L</div>
                 <div class="summary-change" id="daily-pnl-change">--</div>
+                <div class="summary-percentage" id="daily-pnl-percentage">--</div>
             </div>
             <div class="summary-card total-pnl">
                 <div class="summary-value" id="total-pnl">$--</div>
                 <div class="summary-label">Total P&L</div>
                 <div class="summary-change" id="total-pnl-change">--</div>
+                <div class="summary-percentage" id="total-pnl-percentage">--</div>
             </div>
         </div>
 
@@ -629,6 +656,7 @@
                 this.totalPortfolioValue = 0;
                 this.totalDailyPnL = 0;
                 this.totalPortfolioPnL = 0;
+                this.totalPortfolioCost = 0;
                 
                 this.portfolioData.forEach(stock => {
                     const currentPrice = this.currentPrices[stock.symbol] || stock.avgCost;
@@ -646,6 +674,7 @@
                     stock.totalPnL = totalPnL;
                     
                     this.totalPortfolioValue += currentValue;
+                    this.totalPortfolioCost += totalCost;
                     this.totalDailyPnL += dailyPnL;
                     this.totalPortfolioPnL += totalPnL;
                 });
@@ -711,17 +740,35 @@
                 // Update total portfolio value
                 document.getElementById('total-value').textContent = `$${this.totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 
+                // Calculate and display total portfolio value change percentage
+                const totalValueChangePercent = ((this.totalPortfolioValue - this.totalPortfolioCost) / this.totalPortfolioCost) * 100;
+                const totalValueChangeElement = document.getElementById('total-value-change');
+                totalValueChangeElement.textContent = `${totalValueChangePercent >= 0 ? '+' : ''}${totalValueChangePercent.toFixed(2)}%`;
+                totalValueChangeElement.className = `summary-percentage ${totalValueChangePercent >= 0 ? 'positive' : 'negative'}`;
+                
                 // Update daily P&L
                 document.getElementById('daily-pnl').textContent = `$${this.totalDailyPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 const dailyChangeElement = document.getElementById('daily-pnl-change');
                 dailyChangeElement.textContent = this.totalDailyPnL >= 0 ? '📈 Positive' : '📉 Negative';
                 dailyChangeElement.className = `summary-change ${this.totalDailyPnL >= 0 ? 'positive' : 'negative'}`;
                 
+                // Calculate and display daily P&L percentage
+                const dailyPnLPercent = (this.totalDailyPnL / this.totalPortfolioValue) * 100;
+                const dailyPnLPercentElement = document.getElementById('daily-pnl-percentage');
+                dailyPnLPercentElement.textContent = `${dailyPnLPercent >= 0 ? '+' : ''}${dailyPnLPercent.toFixed(2)}%`;
+                dailyPnLPercentElement.className = `summary-percentage ${dailyPnLPercent >= 0 ? 'positive' : 'negative'}`;
+                
                 // Update total P&L
                 document.getElementById('total-pnl').textContent = `$${this.totalPortfolioPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 const totalChangeElement = document.getElementById('total-pnl-change');
-                totalChangeElement.textContent = this.totalPortfolioPnL >= 0 ? '📈 Profitable' : '📉 Loss';
+                totalChangeElement.textContent = this.totalPortfolioPnL >= 0 ? '📈 Profitable' : '📉 Negative';
                 totalChangeElement.className = `summary-change ${this.totalPortfolioPnL >= 0 ? 'positive' : 'negative'}`;
+                
+                // Calculate and display total P&L percentage
+                const totalPnLPercent = (this.totalPortfolioPnL / this.totalPortfolioCost) * 100;
+                const totalPnLPercentElement = document.getElementById('total-pnl-percentage');
+                totalPnLPercentElement.textContent = `${totalPnLPercent >= 0 ? '+' : ''}${totalPnLPercent.toFixed(2)}%`;
+                totalPnLPercentElement.className = `summary-percentage ${totalPnLPercent >= 0 ? 'positive' : 'negative'}`;
             }
             
             setLoadingState(isLoading) {
