@@ -265,7 +265,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 16px;
+        }
+
+        .table-container {
+            width: 100%;
             overflow-x: auto;
+            border-radius: 8px;
+            background: var(--card-bg);
         }
 
         .portfolio-table th {
@@ -279,12 +285,16 @@
             letter-spacing: 0.5px;
             border-bottom: 1px solid var(--border);
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .portfolio-table td {
             padding: 16px 12px;
             border-bottom: 1px solid var(--border);
             font-size: 0.875rem;
+            white-space: nowrap;
         }
 
         .portfolio-table tr:hover {
@@ -322,6 +332,25 @@
         .allocation-cell {
             text-align: center;
             font-weight: 500;
+        }
+
+        /* Scrollbar Styling */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: var(--dark-lighter);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
         }
 
         /* Loading States */
@@ -392,19 +421,20 @@
                 border-radius: 16px;
             }
 
+            .table-container {
+                margin: 0 -16px;
+                border-radius: 0;
+            }
+
             .portfolio-table {
                 font-size: 0.75rem;
-                margin: 0 -16px;
-                width: 100%;
-                min-width: 100%;
-                overflow-x: auto;
+                min-width: 800px; /* Ensure table has minimum width for scrolling */
             }
 
             .portfolio-table th,
             .portfolio-table td {
                 padding: 12px 6px;
                 font-size: 0.65rem;
-                white-space: nowrap;
             }
 
             .section-header {
@@ -442,8 +472,12 @@
                 margin: 0 -4px 16px -4px;
             }
 
-            .portfolio-table {
+            .table-container {
                 margin: 0 -8px;
+            }
+
+            .portfolio-table {
+                min-width: 700px; /* Smaller minimum width for very small screens */
                 font-size: 0.6rem;
             }
 
@@ -615,10 +649,13 @@
                     if (result.status === 'fulfilled' && result.value) {
                         this.currentPrices[stock.symbol] = result.value.current;
                         this.previousPrices[stock.symbol] = result.value.previous;
+                        console.log(`✅ Loaded real price for ${stock.symbol}: $${result.value.current}`);
                     } else {
                         // Fallback to simulated data if API fails
-                        this.currentPrices[stock.symbol] = this.generateSimulatedPrice(stock.avgCost);
-                        this.previousPrices[stock.symbol] = this.currentPrices[stock.symbol] * (0.98 + Math.random() * 0.04);
+                        const simulatedPrice = this.generateSimulatedPrice(stock.avgCost);
+                        this.currentPrices[stock.symbol] = simulatedPrice;
+                        this.previousPrices[stock.symbol] = simulatedPrice * (0.98 + Math.random() * 0.04);
+                        console.log(`⚠️ Using simulated price for ${stock.symbol}: $${simulatedPrice}`);
                     }
                 });
             }
@@ -629,27 +666,39 @@
                     const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=1SA4YKBCTW71XDV1`);
                     const data = await response.json();
                     
-                    if (data['Global Quote']) {
+                    if (data['Global Quote'] && data['Global Quote']['05. price']) {
                         const quote = data['Global Quote'];
                         const currentPrice = parseFloat(quote['05. price']);
                         const previousClose = parseFloat(quote['08. previous close']);
                         
-                        return {
-                            current: currentPrice,
-                            previous: previousClose
-                        };
+                        // Validate the price data
+                        if (currentPrice > 0 && !isNaN(currentPrice)) {
+                            console.log(`✅ ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
+                            return {
+                                current: currentPrice,
+                                previous: previousClose
+                            };
+                        } else {
+                            console.log(`❌ ${symbol}: Invalid price data - ${quote['05. price']}`);
+                        }
+                    } else {
+                        console.log(`❌ ${symbol}: No quote data available`);
                     }
                     return null;
                 } catch (error) {
-                    console.log(`Failed to fetch price for ${symbol}:`, error);
+                    console.log(`❌ Failed to fetch price for ${symbol}:`, error);
                     return null;
                 }
             }
             
             generateSimulatedPrice(avgCost) {
-                // Generate realistic price variation around average cost
-                const variation = 0.7 + Math.random() * 0.6; // 70% to 130% of avg cost
-                return avgCost * variation;
+                // Generate more realistic price variation around average cost
+                // Most stocks don't vary more than ±50% from their typical range
+                const variation = 0.8 + Math.random() * 0.4; // 80% to 120% of avg cost
+                const price = avgCost * variation;
+                
+                // Ensure price is reasonable (not too low or too high)
+                return Math.max(price, avgCost * 0.5);
             }
             
             calculatePortfolioMetrics() {
@@ -694,19 +743,20 @@
                 }
                 
                 let tableHTML = `
-                    <table class="portfolio-table">
-                        <thead>
-                            <tr>
-                                <th>Symbol</th>
-                                <th>Shares</th>
-                                <th>Avg Cost/Share</th>
-                                <th>Current Price</th>
-                                <th>Daily P&L</th>
-                                <th>Total P&L</th>
-                                <th>Allocation %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <div class="table-container">
+                        <table class="portfolio-table">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Shares</th>
+                                    <th>Avg Cost/Share</th>
+                                    <th>Current Price</th>
+                                    <th>Daily P&L</th>
+                                    <th>Total P&L</th>
+                                    <th>Allocation %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                 `;
                 
                 this.portfolioData.forEach(stock => {
@@ -732,7 +782,7 @@
                     `;
                 });
                 
-                tableHTML += '</tbody></table>';
+                tableHTML += '</tbody></table></div>';
                 tableContainer.innerHTML = tableHTML;
             }
             
