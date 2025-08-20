@@ -2729,6 +2729,8 @@
             }
             
             updateAllDisplays() {
+                // Recalculate portfolio metrics with new currency
+                this.calculatePortfolioMetrics();
                 this.renderPortfolioSummary();
                 this.renderPortfolioTable(); // Add this to refresh the portfolio table
                 this.updateRSUDisplay();
