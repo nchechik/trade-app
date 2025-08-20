@@ -775,6 +775,16 @@
             color: var(--accent);
             text-align: left;
         }
+        
+        /* Yellow stock symbols for specific stocks */
+        .symbol-cell[data-symbol="DRIV"],
+        .symbol-cell[data-symbol="SHLD"],
+        .symbol-cell[data-symbol="VOO"],
+        .symbol-cell[data-symbol="XBI"],
+        .symbol-cell[data-symbol="SOXX"] {
+            color: #FFD700; /* Golden yellow */
+            text-shadow: 0 0 2px rgba(255, 215, 0, 0.3);
+        }
 
         .shares-cell {
             text-align: center;
@@ -1780,13 +1790,17 @@
                 this.exchangeRate = 1.0; // USD to ILS rate
                 this.currencySymbol = '$';
                 
-                            // Column configuration with localStorage persistence
-            this.columns = this.loadColumnConfig();
-            
-            // Card collapse state with localStorage persistence
-            this.cardStates = this.loadCardStates();
-            
-            this.init();
+                // Column configuration with localStorage persistence
+                this.columns = this.loadColumnConfig();
+                
+                // Card collapse state with localStorage persistence
+                this.cardStates = this.loadCardStates();
+                
+                // Load sort state and currency state from localStorage
+                this.loadSortState();
+                this.loadCurrencyState();
+                
+                this.init();
             }
             
             loadColumnConfig() {
@@ -1853,11 +1867,61 @@
                 return defaultStates;
             }
             
+            loadSortState() {
+                try {
+                    const saved = localStorage.getItem('portfolio-sort-state');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        this.sortColumn = parsed.column || 'symbol';
+                        this.sortDirection = parsed.direction || 'asc';
+                    }
+                } catch (error) {
+                    console.warn('Failed to load sort state from localStorage:', error);
+                }
+            }
+            
+            loadCurrencyState() {
+                try {
+                    const saved = localStorage.getItem('portfolio-currency-state');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        this.currentCurrency = parsed.currency || 'USD';
+                        this.exchangeRate = parsed.exchangeRate || 1.0;
+                        this.currencySymbol = parsed.currencySymbol || '$';
+                    }
+                } catch (error) {
+                    console.warn('Failed to load currency state from localStorage:', error);
+                }
+            }
+            
             saveCardStates() {
                 try {
                     localStorage.setItem('portfolio-card-states', JSON.stringify(this.cardStates));
                 } catch (error) {
                     console.warn('Failed to save card states to localStorage:', error);
+                }
+            }
+            
+            saveSortState() {
+                try {
+                    localStorage.setItem('portfolio-sort-state', JSON.stringify({
+                        column: this.sortColumn,
+                        direction: this.sortDirection
+                    }));
+                } catch (error) {
+                    console.warn('Failed to save sort state to localStorage:', error);
+                }
+            }
+            
+            saveCurrencyState() {
+                try {
+                    localStorage.setItem('portfolio-currency-state', JSON.stringify({
+                        currency: this.currentCurrency,
+                        exchangeRate: this.exchangeRate,
+                        currencySymbol: this.currencySymbol
+                    }));
+                } catch (error) {
+                    console.warn('Failed to save currency state to localStorage:', error);
                 }
             }
             
@@ -2164,7 +2228,9 @@
                 
                 // Render headers based on column configuration
                 visibleColumns.forEach(column => {
-                    tableHTML += `<th class="sortable" data-sort="${column.key}" data-sort-type="${column.type}">${column.name}</th>`;
+                    const isSorted = this.sortColumn === column.key;
+                    const sortClass = isSorted ? `sort-${this.sortDirection}` : '';
+                    tableHTML += `<th class="sortable ${sortClass}" data-sort="${column.key}" data-sort-type="${column.type}">${column.name}</th>`;
                 });
                 
                 tableHTML += `
@@ -2190,6 +2256,9 @@
                             case 'symbol':
                                 cellContent = stock.symbol;
                                 cellClass = 'symbol-cell';
+                                // Add data-symbol attribute for CSS styling
+                                tableHTML += `<td class="${cellClass}" data-symbol="${stock.symbol}">${cellContent}</td>`;
+                                continue; // Skip the default tableHTML += line
                                 break;
                             case 'shares':
                                 cellContent = stock.shares.toLocaleString();
@@ -2841,6 +2910,7 @@
                     this.currencySymbol = '$';
                 }
                 this.updateCurrencyToggleDisplay();
+                this.saveCurrencyState();
             }
             
             async switchToUSD() {
@@ -2849,6 +2919,7 @@
                 this.currencySymbol = '$';
                 console.log('✅ Switched to USD');
                 this.updateCurrencyToggleDisplay();
+                this.saveCurrencyState();
             }
             
             updateCurrencyToggleDisplay() {
