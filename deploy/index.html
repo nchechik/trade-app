@@ -774,6 +774,11 @@
             font-weight: 600;
             color: var(--accent);
             text-align: left;
+            position: sticky;
+            left: 0;
+            background: var(--card-bg);
+            z-index: 10;
+            border-right: 2px solid var(--border);
         }
         
         /* Yellow stock symbols for specific stocks */
@@ -784,6 +789,47 @@
         .symbol-cell[data-symbol="SOXX"] {
             color: #FFD700; /* Golden yellow */
             text-shadow: 0 0 2px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Sticky symbol header */
+        .portfolio-table th:first-child {
+            position: sticky;
+            left: 0;
+            background: var(--card-bg);
+            z-index: 20;
+            border-right: 2px solid var(--border);
+        }
+        
+        /* Ensure sticky positioning works properly */
+        .table-container {
+            position: relative;
+            overflow-x: auto;
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .portfolio-table {
+            position: relative;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        /* Enhanced sticky column styling */
+        .symbol-cell,
+        .portfolio-table th:first-child {
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Smooth transition for sticky columns */
+        .symbol-cell,
+        .portfolio-table th:first-child {
+            transition: box-shadow 0.3s ease;
+        }
+        
+        /* Hover effect for sticky symbol cells */
+        .symbol-cell:hover {
+            background: var(--card-hover);
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
         }
 
         .shares-cell {
@@ -1257,6 +1303,23 @@
                 padding: 12px 6px;
                 font-size: 0.8rem;
             }
+            
+            /* Mobile sticky symbol column */
+            .symbol-cell {
+                position: sticky;
+                left: 0;
+                background: var(--card-bg);
+                z-index: 10;
+                border-right: 2px solid var(--border);
+            }
+            
+            .portfolio-table th:first-child {
+                position: sticky;
+                left: 0;
+                background: var(--card-bg);
+                z-index: 20;
+                border-right: 2px solid var(--border);
+            }
 
             .portfolio-table th.sortable::after {
                 right: 4px;
@@ -1349,6 +1412,23 @@
                 padding: 8px 4px;
                 font-size: 0.8rem;
                 text-align: left;
+            }
+            
+            /* Extra small mobile sticky symbol column */
+            .symbol-cell {
+                position: sticky;
+                left: 0;
+                background: var(--card-bg);
+                z-index: 10;
+                border-right: 2px solid var(--border);
+            }
+            
+            .portfolio-table th:first-child {
+                position: sticky;
+                left: 0;
+                background: var(--card-bg);
+                z-index: 20;
+                border-right: 2px solid var(--border);
             }
         }
 
