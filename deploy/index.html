@@ -141,7 +141,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 20px;
+            padding: 5px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -229,7 +229,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
-            padding: 20px;
+            padding: 5px;
         }
         
         .rsu-stocks {
@@ -242,7 +242,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 20px;
+            padding: 5px;
             transition: all 0.3s ease;
         }
         
@@ -405,7 +405,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 24px 16px 24px;
+            padding: 10px;
             border-bottom: 1px solid var(--border);
             background: var(--dark-lighter);
             transition: all 0.2s ease;
@@ -431,22 +431,10 @@
         
 
         
-        .collapse-icon {
-            font-size: 1.25rem;
-            font-weight: bold;
-            transition: all 0.2s ease;
-            opacity: 0.7;
-            padding: 4px;
-            border-radius: 4px;
-        }
-        
-        .section-header:hover .collapse-icon,
-        .card-header:hover .collapse-icon {
-            opacity: 1;
-        }
+
         
         .card-content {
-            padding: 16px 20px 20px 20px;
+            padding: 5px;
             transition: all 0.3s ease;
         }
         
@@ -507,7 +495,7 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 0;
-            padding: 20px 24px 16px 24px;
+            padding: 10px;
             border-bottom: 1px solid var(--border);
             background: var(--card-bg);
             transition: all 0.2s ease;
@@ -678,7 +666,7 @@
             }
             
             .summary-card {
-                padding: 20px;
+                padding: 5px;
                 gap: 16px;
             }
             
@@ -695,7 +683,7 @@
             }
             
             .section-header {
-                padding: 16px 20px 12px 20px;
+                padding: 10px;
             }
             
             .section-title {
@@ -711,7 +699,7 @@
             }
             
             .rsu-stock-card {
-                padding: 16px;
+                padding: 5px;
             }
             
             .stock-symbol {
@@ -1108,7 +1096,7 @@
             
             /* Mobile column controls */
             .column-controls {
-                padding: 16px;
+                padding: 5px;
                 margin-bottom: 20px;
             }
             
@@ -1153,7 +1141,7 @@
             }
 
             .summary-card {
-                padding: 14px;
+                padding: 5px;
                 gap: 10px;
             }
             
@@ -1166,7 +1154,7 @@
             }
 
             .portfolio-section {
-                padding: 16px;
+                padding: 5px;
                 margin: 0 -4px 16px -4px;
             }
 
@@ -1306,7 +1294,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 24px;
+            padding: 5px;
             box-shadow: var(--shadow-sm);
             margin-bottom: 24px;
             overflow: hidden;
@@ -1336,7 +1324,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
+            padding: 5px;
             background: rgba(59, 130, 246, 0.1);
             border-radius: 12px;
             border: 1px solid rgba(59, 130, 246, 0.2);
@@ -1375,7 +1363,7 @@
         <div class="header">
             <div class="logo">
                 <div class="logo-icon">
-                    📈
+                    📊
                 </div>
                 <div class="logo-text">
                     <h1>Stock Portfolio Dashboard</h1>
@@ -1384,7 +1372,7 @@
             </div>
             <div class="header-controls-top">
                 <button class="refresh-icon-btn" id="refresh-all-button" onclick="portfolioDashboard.refreshAllData()" title="Refresh all data">
-                    <span class="refresh-icon">🔄</span>
+                    <span class="refresh-icon">📊</span>
                 </button>
                 <button class="currency-toggle-btn" id="currency-toggle" onclick="portfolioDashboard.toggleCurrency()">
                     <span class="currency-symbol">$</span>
@@ -1398,10 +1386,7 @@
         <!-- Total Wealth Section - Moved to top -->
         <div class="total-wealth-section" data-card-type="total-wealth">
             <div class="section-header" onclick="portfolioDashboard.toggleCard('total-wealth')" style="cursor: pointer;">
-                <div class="section-title">💰 Total Wealth</div>
-                <div class="header-controls">
-                    <span class="collapse-icon" id="total-wealth-icon">−</span>
-                </div>
+                <div class="section-title">📊 Total Wealth</div>
             </div>
             
             <div class="card-content">
@@ -1440,10 +1425,7 @@
         <!-- Portfolio Holdings with Integrated Summaries -->
         <div class="portfolio-section" data-card-type="portfolio-holdings">
             <div class="section-header" onclick="portfolioDashboard.toggleCard('portfolio-holdings')" style="cursor: pointer;">
-                <div class="section-title">📊 Portfolio Holdings</div>
-                <div class="header-controls">
-                    <span class="collapse-icon" id="portfolio-holdings-icon">−</span>
-                </div>
+                <div class="section-title">📈 Portfolio Holdings</div>
             </div>
             
             <div class="card-content">
@@ -1451,7 +1433,7 @@
                 <div class="portfolio-summary">
                     <!-- Total Portfolio Value - Centered at top -->
                     <div class="summary-card total-value main-card">
-                        <div class="summary-icon">💰</div>
+                        <div class="summary-icon">📊</div>
                         <div class="summary-content">
                             <div class="summary-value" id="total-value">$--</div>
                             <div class="summary-label">Total Portfolio Value</div>
@@ -1463,7 +1445,7 @@
                     <div class="profit-metrics-row">
                         <!-- Today's Profit - Left side -->
                         <div class="summary-card daily-pnl">
-                            <div class="summary-icon">📈</div>
+                            <div class="summary-icon">📊</div>
                             <div class="summary-content">
                                 <div class="summary-label">Today's Profit</div>
                                 <div class="summary-value" id="daily-pnl">$--</div>
@@ -1473,7 +1455,7 @@
                         
                         <!-- Total Profit - Right side -->
                         <div class="summary-card total-pnl">
-                            <div class="summary-icon">🎯</div>
+                            <div class="summary-icon">📊</div>
                             <div class="summary-content">
                                 <div class="summary-label">Total Profit</div>
                                 <div class="summary-value" id="total-pnl">$--</div>
@@ -1489,7 +1471,7 @@
                 <!-- Portfolio Table -->
                 <div class="table-section">
                     <div class="table-header">
-                        <h3>📋 Holdings Details</h3>
+                        <h3>📊 Holdings Details</h3>
                         <div class="table-info">
                             <span class="stock-count" id="stock-count">-- stocks</span>
                         </div>
@@ -1504,16 +1486,13 @@
         <!-- RSU Holdings Section - Now separate from Portfolio Holdings -->
         <div class="rsu-section" data-card-type="rsu-holdings">
             <div class="section-header" onclick="portfolioDashboard.toggleCard('rsu-holdings')" style="cursor: pointer;">
-                <div class="section-title">📈 RSU Holdings</div>
-                <div class="header-controls">
-                    <span class="collapse-icon" id="rsu-holdings-icon">−</span>
-                </div>
+                <div class="section-title">📋 RSU Holdings</div>
             </div>
             
             <div class="card-content">
                 <div class="rsu-summary">
                     <div class="summary-card main-card rsu-total">
-                        <div class="summary-icon">💼</div>
+                        <div class="summary-icon">📊</div>
                         <div class="summary-content">
                             <div class="summary-value" id="rsu-total-value">$--</div>
                             <div class="summary-label">Total RSU Value</div>
@@ -1588,15 +1567,14 @@
         <!-- Column Controls - Moved below table -->
         <div class="column-controls" data-card-type="column-controls">
             <div class="card-header" onclick="portfolioDashboard.toggleCard('column-controls')" style="cursor: pointer;">
-                <h3>🎛️ Customize Table Columns</h3>
-                <span class="collapse-icon" id="column-controls-icon">−</span>
+                <h3>⚙️ Customize Table Columns</h3>
             </div>
             <div class="card-content">
                 <div class="column-list" id="column-list">
                     <!-- Column items will be generated here -->
                 </div>
                 <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
-                    🔄 Reset to Default
+                    📊 Reset to Default
                 </button>
             </div>
         </div>
@@ -1605,7 +1583,7 @@
         <div class="footer">
             <div class="footer-content">
                 <div class="footer-info">
-                    <p>🔄 Auto-refreshes every 5 minutes | 📱 Mobile-optimized</p>
+                    <p>📊 Auto-refreshes every 5 minutes | 📱 Mobile-optimized</p>
                     <p>Last updated: <span id="last-update">-</span></p>
                     <p>Data provided by Finnhub API</p>
                 </div>
@@ -1750,25 +1728,14 @@
                 
                 const isCollapsed = this.cardStates[cardType];
                 const contentElement = cardElement.querySelector('.card-content');
-                const collapseIcon = cardElement.querySelector('.collapse-icon');
                 
                 if (contentElement) {
                     if (isCollapsed) {
                         contentElement.classList.add('collapsed');
                         cardElement.classList.add('collapsed');
-                        // Show eye icon when collapsed
-                        if (collapseIcon) {
-                            collapseIcon.textContent = '👁️';
-                            collapseIcon.title = 'Click to expand';
-                        }
                     } else {
                         contentElement.classList.remove('collapsed');
                         cardElement.classList.remove('collapsed');
-                        // Show minus icon when expanded
-                        if (collapseIcon) {
-                            collapseIcon.textContent = '−';
-                            collapseIcon.title = 'Click to collapse';
-                        }
                     }
                 }
             }
