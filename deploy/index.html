@@ -1394,7 +1394,7 @@
                         <div class="summary-icon">💰</div>
                         <div class="summary-content">
                             <div class="summary-value" id="total-value">$--</div>
-                            <div class="summary-label">Total Portfolio Value</div>
+                            <div class="summary-label">Total Portfolio Value (USD)</div>
                             <div class="summary-percentage" id="total-value-change">--</div>
                         </div>
                     </div>
@@ -1520,6 +1520,93 @@
                     </div>
                     <div id="portfolio-table">
                         <div class="loading">Loading portfolio data...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- RSU Holdings Section - Now separate from Portfolio Holdings -->
+        <div class="rsu-section" data-card-type="rsu-holdings">
+            <div class="section-header">
+                <div class="section-title">📈 RSU Holdings</div>
+                <div class="header-controls">
+                    <button class="refresh-button" id="refresh-rsu-button" onclick="portfolioDashboard.refreshRSUPrices()">
+                        🔄 Refresh RSU
+                    </button>
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('rsu-holdings')" title="Toggle section">
+                        <span class="collapse-icon">−</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <div class="rsu-summary">
+                    <div class="summary-card main-card rsu-total">
+                        <div class="summary-icon">💼</div>
+                        <div class="summary-content">
+                            <div class="summary-value" id="rsu-total-value">$--</div>
+                            <div class="summary-label">Total RSU Value</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rsu-stocks">
+                    <div class="rsu-stock-card">
+                        <div class="stock-header">
+                            <div class="stock-symbol">EFN</div>
+                            <div class="stock-shares">2,537 shares</div>
+                            <div class="stock-total-value" id="efn-total-value">$0.00</div>
+                        </div>
+                        <div class="stock-details">
+                            <div class="stock-price">
+                                <span class="label">Base Price:</span>
+                                <span class="value">$21.00 USD</span>
+                            </div>
+                            <div class="stock-current">
+                                <span class="label">Current:</span>
+                                <span class="value" id="efn-current-price">$26.58</span>
+                                <span class="price-indicator" id="efn-price-indicator">DEFAULT</span>
+                            </div>
+                            <div class="stock-change">
+                                <span class="label">Daily P&L (Total):</span>
+                                <span class="value" id="efn-daily-pnl">$0.00</span>
+                                <span class="percentage" id="efn-daily-percentage">0.00%</span>
+                            </div>
+                            <div class="stock-total-pnl">
+                                <span class="label">Total P&L (Total):</span>
+                                <span class="value" id="efn-total-pnl">$0.00</span>
+                                <span class="percentage" id="efn-total-percentage">0.00%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="rsu-stock-card">
+                        <div class="stock-header">
+                            <div class="stock-symbol">WIX</div>
+                            <div class="stock-shares">187 shares</div>
+                            <div class="stock-total-value" id="wix-total-value">$0.00</div>
+                        </div>
+                        <div class="stock-details">
+                            <div class="stock-price">
+                                <span class="label">Base Price:</span>
+                                <span class="value">$78.27 USD</span>
+                            </div>
+                            <div class="stock-current">
+                                <span class="label">Current:</span>
+                                <span class="value" id="wix-current-price">$78.27</span>
+                                <span class="price-indicator" id="wix-price-indicator">DEFAULT</span>
+                            </div>
+                            <div class="stock-change">
+                                <span class="label">Daily P&L (Total):</span>
+                                <span class="value" id="wix-daily-pnl">$0.00</span>
+                                <span class="percentage" id="wix-daily-percentage">0.00%</span>
+                            </div>
+                            <div class="stock-total-pnl">
+                                <span class="label">Total P&L (Total):</span>
+                                <span class="value" id="wix-total-pnl">$0.00</span>
+                                <span class="percentage" id="wix-total-percentage">0.00%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2069,8 +2156,8 @@
             }
             
             renderPortfolioSummary() {
-                // Update total portfolio value
-                document.getElementById('total-value').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
+                // Update total portfolio value - ALWAYS in USD
+                document.getElementById('total-value').textContent = `$${this.totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 
                 // Calculate and display total portfolio value change percentage
                 const totalValueChangePercent = ((this.totalPortfolioValue - this.totalPortfolioCost) / this.totalPortfolioCost) * 100;
