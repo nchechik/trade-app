@@ -79,6 +79,52 @@
             border-radius: 2px;
         }
         
+        .currency-toggle-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .currency-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .currency-toggle-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+        
+        .currency-symbol {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .currency-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .toggle-arrow {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .currency-toggle-btn.open .toggle-arrow {
+            transform: rotate(180deg);
+        }
+        
         .total-wealth-summary {
             display: flex;
             justify-content: center;
@@ -305,6 +351,13 @@
             font-size: 0.875rem;
             color: var(--text-secondary);
             font-weight: 500;
+        }
+        
+        .stock-total-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
         }
         
         .stock-details {
@@ -1286,6 +1339,13 @@
                     <p>Real-time portfolio tracking & analysis</p>
                 </div>
             </div>
+            <div class="currency-toggle-section">
+                <button class="currency-toggle-btn" id="currency-toggle" onclick="portfolioDashboard.toggleCurrency()">
+                    <span class="currency-symbol">$</span>
+                    <span class="currency-label">USD</span>
+                    <span class="toggle-arrow">▼</span>
+                </button>
+            </div>
             <div class="total-wealth-summary">
                 <div class="wealth-item">
                     <span class="wealth-label">Portfolio:</span>
@@ -1391,6 +1451,7 @@
                                     <div class="stock-header">
                                         <div class="stock-symbol">EFN</div>
                                         <div class="stock-shares">2,537 shares</div>
+                                        <div class="stock-total-value" id="efn-total-value">$0.00</div>
                                     </div>
                                     <div class="stock-details">
                                         <div class="stock-price">
@@ -1419,6 +1480,7 @@
                                     <div class="stock-header">
                                         <div class="stock-symbol">WIX</div>
                                         <div class="stock-shares">187 shares</div>
+                                        <div class="stock-total-value" id="wix-total-value">$0.00</div>
                                     </div>
                                     <div class="stock-details">
                                         <div class="stock-price">
@@ -1528,6 +1590,11 @@
                 this.totalRSUDailyPnL = 0;
                 this.sortColumn = null;
                 this.sortDirection = 'asc';
+                
+                // Currency exchange settings
+                this.currentCurrency = 'USD';
+                this.exchangeRate = 1.0; // USD to ILS rate
+                this.currencySymbol = '$';
                 
                             // Column configuration with localStorage persistence
             this.columns = this.loadColumnConfig();
@@ -1999,7 +2066,7 @@
             
             renderPortfolioSummary() {
                 // Update total portfolio value
-                document.getElementById('total-value').textContent = `$${this.totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('total-value').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
                 
                 // Calculate and display total portfolio value change percentage
                 const totalValueChangePercent = ((this.totalPortfolioValue - this.totalPortfolioCost) / this.totalPortfolioCost) * 100;
@@ -2008,7 +2075,7 @@
                 totalValueChangeElement.className = `summary-percentage ${totalValueChangePercent >= 0 ? 'positive' : 'negative'}`;
                 
                 // Update daily P&L
-                document.getElementById('daily-pnl').textContent = `$${this.totalDailyPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('daily-pnl').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalDailyPnL)}`;
 
                 
                 // Calculate and display daily P&L percentage
@@ -2018,7 +2085,7 @@
                 dailyPnLPercentElement.className = `summary-percentage ${dailyPnLPercent >= 0 ? 'positive' : 'negative'}`;
                 
                 // Update total P&L
-                document.getElementById('total-pnl').textContent = `$${this.totalPortfolioPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('total-pnl').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioPnL)}`;
 
                 
                 // Calculate and display total P&L percentage
@@ -2415,7 +2482,7 @@
                     const totalPercentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-total-percentage`);
                     
                     if (currentPriceEl) {
-                        currentPriceEl.textContent = `$${effectivePrice.toFixed(2)}`;
+                        currentPriceEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(effectivePrice)}`;
                         
                         // Set price indicator based on whether it's default or live price
                         const priceIndicatorEl = document.getElementById(`${stock.symbol.toLowerCase()}-price-indicator`);
@@ -2430,10 +2497,16 @@
                         }
                     }
                     
+                    // Update stock total value
+                    const stockTotalValueEl = document.getElementById(`${stock.symbol.toLowerCase()}-total-value`);
+                    if (stockTotalValueEl) {
+                        stockTotalValueEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(currentValue)}`;
+                    }
+                    
                     // Daily P&L (total for all shares)
                     if (dailyPnlEl) {
                         const dailyPnl = stock.shares * stock.dailyChange;
-                        dailyPnlEl.textContent = `${dailyPnl >= 0 ? '+' : ''}$${dailyPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        dailyPnlEl.textContent = `${dailyPnl >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(dailyPnl))}`;
                         dailyPnlEl.className = `value ${dailyPnl >= 0 ? 'positive' : 'negative'}`;
                     }
                     if (dailyPercentageEl) {
@@ -2444,7 +2517,7 @@
                     // Total P&L (total for all shares since base price)
                     if (totalPnlEl) {
                         const totalPnl = stock.shares * (effectivePrice - stock.basePrice);
-                        totalPnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        totalPnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(totalPnl))}`;
                         totalPnlEl.className = `value ${totalPnl >= 0 ? 'positive' : 'negative'}`;
                     }
                     if (totalPercentageEl) {
@@ -2460,7 +2533,7 @@
                 
                 const rsuTotalEl = document.getElementById('rsu-total-value');
                 if (rsuTotalEl) {
-                    rsuTotalEl.textContent = `$${totalRSUValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    rsuTotalEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(totalRSUValue)}`;
                 }
             }
             
@@ -2490,14 +2563,84 @@
                 const headerTotalEl = document.getElementById('header-total-wealth');
                 
                 if (headerPortfolioEl) {
-                    headerPortfolioEl.textContent = `$${this.totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    headerPortfolioEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
                 }
                 if (headerRSUEl) {
-                    headerRSUEl.textContent = `$${this.totalRSUValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    headerRSUEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalRSUValue)}`;
                 }
                 if (headerTotalEl) {
-                    headerTotalEl.textContent = `$${totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    headerTotalEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(totalWealth)}`;
                 }
+            }
+            
+            // Currency exchange methods
+            async toggleCurrency() {
+                if (this.currentCurrency === 'USD') {
+                    await this.switchToILS();
+                } else {
+                    await this.switchToUSD();
+                }
+                this.updateAllDisplays();
+            }
+            
+            async switchToILS() {
+                try {
+                    const response = await fetch('https://api.frankfurter.app/latest?from=USD&to=ILS');
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.exchangeRate = data.rates.ILS;
+                        this.currentCurrency = 'ILS';
+                        this.currencySymbol = '₪';
+                        console.log(`✅ Switched to ILS - Exchange rate: 1 USD = ${this.exchangeRate.toFixed(4)} ILS`);
+                    } else {
+                        throw new Error('Failed to fetch exchange rate');
+                    }
+                } catch (error) {
+                    console.error('Error fetching exchange rate:', error);
+                    // Fallback to USD if exchange rate fetch fails
+                    this.currentCurrency = 'USD';
+                    this.exchangeRate = 1.0;
+                    this.currencySymbol = '$';
+                }
+                this.updateCurrencyToggleDisplay();
+            }
+            
+            async switchToUSD() {
+                this.currentCurrency = 'USD';
+                this.exchangeRate = 1.0;
+                this.currencySymbol = '$';
+                console.log('✅ Switched to USD');
+                this.updateCurrencyToggleDisplay();
+            }
+            
+            updateCurrencyToggleDisplay() {
+                const toggleBtn = document.getElementById('currency-toggle');
+                const currencySymbol = toggleBtn.querySelector('.currency-symbol');
+                const currencyLabel = toggleBtn.querySelector('.currency-label');
+                
+                if (this.currentCurrency === 'ILS') {
+                    currencySymbol.textContent = '₪';
+                    currencyLabel.textContent = 'ILS';
+                    toggleBtn.classList.add('open');
+                } else {
+                    currencySymbol.textContent = '$';
+                    currencyLabel.textContent = 'USD';
+                    toggleBtn.classList.remove('open');
+                }
+            }
+            
+            formatCurrencyValue(value) {
+                const convertedValue = value * this.exchangeRate;
+                return convertedValue.toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+            }
+            
+            updateAllDisplays() {
+                this.renderPortfolioSummary();
+                this.updateRSUDisplay();
+                this.updateTotalWealthDisplay();
             }
         }
         
