@@ -536,33 +536,7 @@
             border-radius: 2px;
         }
 
-        .refresh-button {
-            background: var(--accent);
-            color: var(--text-primary);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
 
-        .refresh-button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .refresh-button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
 
         /* Table Styles */
         .portfolio-table {
@@ -669,6 +643,20 @@
                 margin-bottom: 24px;
             }
             
+            .header-controls-top {
+                gap: 12px;
+                margin-top: 16px;
+            }
+            
+            .refresh-icon-btn {
+                width: 36px;
+                height: 36px;
+            }
+            
+            .refresh-icon {
+                font-size: 1.125rem;
+            }
+            
             .logo-text h1 {
                 font-size: 1.5rem;
             }
@@ -714,12 +702,7 @@
                 font-size: 1.125rem;
             }
             
-            .refresh-button {
-                padding: 12px 20px;
-                font-size: 0.8rem;
-                width: 100%;
-                justify-content: center;
-            }
+
             
             /* RSU Mobile Styles */
             .rsu-stocks {
@@ -1121,10 +1104,7 @@
                 gap: 16px;
             }
 
-            .refresh-button {
-                width: 100%;
-                padding: 12px;
-            }
+
             
             /* Mobile column controls */
             .column-controls {
@@ -1229,6 +1209,49 @@
 
         .footer-info p {
             margin-bottom: 8px;
+        }
+        
+        /* Header Controls Top */
+        .header-controls-top {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .refresh-icon-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+        
+        .refresh-icon-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+        
+        .refresh-icon-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .refresh-icon {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .refresh-icon-btn.loading .refresh-icon {
+            animation: spin 1s linear infinite;
         }
         
         /* Currency Toggle Styles */
@@ -1359,7 +1382,10 @@
                     <p>Real-time portfolio tracking & analysis</p>
                 </div>
             </div>
-            <div class="currency-toggle-section">
+            <div class="header-controls-top">
+                <button class="refresh-icon-btn" id="refresh-all-button" onclick="portfolioDashboard.refreshAllData()" title="Refresh all data">
+                    <span class="refresh-icon">🔄</span>
+                </button>
                 <button class="currency-toggle-btn" id="currency-toggle" onclick="portfolioDashboard.toggleCurrency()">
                     <span class="currency-symbol">$</span>
                     <span class="currency-label">USD</span>
@@ -1418,9 +1444,6 @@
             <div class="section-header">
                 <div class="section-title">📊 Portfolio Holdings</div>
                 <div class="header-controls">
-                    <button class="refresh-button" id="refresh-button" onclick="portfolioDashboard.refreshData()">
-                        🔄 Refresh Data
-                    </button>
                     <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('portfolio-holdings')" title="Toggle section">
                         <span class="collapse-icon">−</span>
                     </button>
@@ -1487,9 +1510,6 @@
             <div class="section-header">
                 <div class="section-title">📈 RSU Holdings</div>
                 <div class="header-controls">
-                    <button class="refresh-button" id="refresh-rsu-button" onclick="portfolioDashboard.refreshRSUPrices()">
-                        🔄 Refresh RSU
-                    </button>
                     <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('rsu-holdings')" title="Toggle section">
                         <span class="collapse-icon">−</span>
                     </button>
@@ -2151,13 +2171,15 @@
             }
             
             setLoadingState(isLoading) {
-                const refreshButton = document.getElementById('refresh-button');
-                if (isLoading) {
-                    refreshButton.disabled = true;
-                    refreshButton.textContent = '⏳ Loading...';
-                } else {
-                    refreshButton.disabled = false;
-                    refreshButton.textContent = '🔄 Refresh Data';
+                const refreshButton = document.getElementById('refresh-all-button');
+                if (refreshButton) {
+                    if (isLoading) {
+                        refreshButton.disabled = true;
+                        refreshButton.classList.add('loading');
+                    } else {
+                        refreshButton.disabled = false;
+                        refreshButton.classList.remove('loading');
+                    }
                 }
             }
             
@@ -2356,14 +2378,50 @@
             }
             
             startAutoRefresh() {
-                // Refresh portfolio data every 5 minutes
+                // Refresh all data every 5 minutes
                 setInterval(() => {
-                    this.loadPortfolioData();
+                    this.refreshAllData();
                 }, 300000); // 5 minutes
             }
             
             refreshData() {
                 this.loadPortfolioData();
+            }
+            
+            async refreshAllData() {
+                try {
+                    // Set loading state
+                    const refreshBtn = document.getElementById('refresh-all-button');
+                    if (refreshBtn) {
+                        refreshBtn.classList.add('loading');
+                        refreshBtn.disabled = true;
+                    }
+                    
+                    // Refresh both portfolio and RSU data
+                    await Promise.all([
+                        this.loadPortfolioData(),
+                        this.loadRSUPrices()
+                    ]);
+                    
+                    // Update all displays
+                    this.updateRSUDisplay();
+                    this.updateTotalWealthDisplay();
+                    
+                    // Update last update time
+                    this.updateLastUpdate();
+                    
+                    console.log('✅ All data refreshed successfully');
+                } catch (error) {
+                    console.error('Error refreshing all data:', error);
+                    this.showErrorMessage('Failed to refresh data');
+                } finally {
+                    // Reset loading state
+                    const refreshBtn = document.getElementById('refresh-all-button');
+                    if (refreshBtn) {
+                        refreshBtn.classList.remove('loading');
+                        refreshBtn.disabled = false;
+                    }
+                }
             }
             
             showErrorMessage(message) {
