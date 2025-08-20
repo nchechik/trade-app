@@ -2262,22 +2262,38 @@
             
             async loadRSUPrices() {
                 const symbols = this.rsuData.map(stock => stock.symbol);
+                console.log('🔄 Loading RSU prices for:', symbols);
                 
                 for (const symbol of symbols) {
                     try {
                         const price = await this.fetchStockPrice(symbol);
-                        if (price && price.c) {
+                        if (price && price.current) {
                             const stock = this.rsuData.find(s => s.symbol === symbol);
                             if (stock) {
-                                stock.currentPrice = price.c;
-                                stock.dailyChange = price.d;
-                                stock.dailyChangePercent = price.dp;
+                                stock.currentPrice = price.current;
+                                // Calculate daily change from current and previous prices
+                                const dailyChange = price.current - price.previous;
+                                const dailyChangePercent = (dailyChange / price.previous) * 100;
+                                stock.dailyChange = dailyChange;
+                                stock.dailyChangePercent = dailyChangePercent;
+                                console.log(`✅ RSU ${symbol}: $${price.current} (Change: $${dailyChange.toFixed(2)}, ${dailyChangePercent.toFixed(2)}%)`);
                             }
+                        } else {
+                            console.log(`⚠️ No price data for RSU ${symbol}`);
                         }
                     } catch (error) {
-                        console.error(`Error fetching price for ${symbol}:`, error);
+                        console.error(`Error fetching price for RSU ${symbol}:`, error);
+                        // Fallback to base price if API fails
+                        const stock = this.rsuData.find(s => s.symbol === symbol);
+                        if (stock) {
+                            stock.currentPrice = stock.basePrice;
+                            stock.dailyChange = 0;
+                            stock.dailyChangePercent = 0;
+                            console.log(`🔄 Using base price for RSU ${symbol}: $${stock.basePrice}`);
+                        }
                     }
                 }
+                console.log('📊 RSU price loading complete');
             }
             
             updateRSUDisplay() {
