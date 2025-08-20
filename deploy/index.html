@@ -2270,6 +2270,7 @@
                     visibleColumns.forEach(column => {
                         let cellContent = '';
                         let cellClass = '';
+                        let skipDefaultRendering = false;
                         
                         switch (column.key) {
                             case 'symbol':
@@ -2277,7 +2278,7 @@
                                 cellClass = 'symbol-cell';
                                 // Add data-symbol attribute for CSS styling
                                 tableHTML += `<td class="${cellClass}" data-symbol="${stock.symbol}">${cellContent}</td>`;
-                                continue; // Skip the default tableHTML += line
+                                skipDefaultRendering = true;
                                 break;
                             case 'shares':
                                 cellContent = stock.shares.toLocaleString();
@@ -2305,7 +2306,9 @@
                                 break;
                         }
                         
-                        tableHTML += `<td class="${cellClass}">${cellContent}</td>`;
+                        if (!skipDefaultRendering) {
+                            tableHTML += `<td class="${cellClass}">${cellContent}</td>`;
+                        }
                     });
                     
                     tableHTML += '</tr>';
