@@ -1384,12 +1384,12 @@
                                             <span class="value" id="efn-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Daily P&L:</span>
+                                            <span class="label">Daily P&L (Total):</span>
                                             <span class="value" id="efn-daily-pnl">$0.00</span>
                                             <span class="percentage" id="efn-daily-percentage">0.00%</span>
                                         </div>
                                         <div class="stock-total-pnl">
-                                            <span class="label">Total P&L:</span>
+                                            <span class="label">Total P&L (Total):</span>
                                             <span class="value" id="efn-total-pnl">$0.00</span>
                                             <span class="percentage" id="efn-total-percentage">0.00%</span>
                                         </div>
@@ -1411,12 +1411,12 @@
                                             <span class="value" id="wix-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Daily P&L:</span>
+                                            <span class="label">Daily P&L (Total):</span>
                                             <span class="value" id="wix-daily-pnl">$0.00</span>
                                             <span class="percentage" id="wix-daily-percentage">0.00%</span>
                                         </div>
                                         <div class="stock-total-pnl">
-                                            <span class="label">Total P&L:</span>
+                                            <span class="label">Total P&L (Total):</span>
                                             <span class="value" id="wix-total-pnl">$0.00</span>
                                             <span class="percentage" id="wix-total-percentage">0.00%</span>
                                         </div>
@@ -2329,10 +2329,10 @@
                     
                     if (currentPriceEl) currentPriceEl.textContent = `$${effectivePrice.toFixed(2)}`;
                     
-                    // Daily P&L (per share)
+                    // Daily P&L (total for all shares)
                     if (dailyPnlEl) {
-                        const dailyPnl = stock.dailyChange;
-                        dailyPnlEl.textContent = `${dailyPnl >= 0 ? '+' : ''}$${dailyPnl.toFixed(2)}`;
+                        const dailyPnl = stock.shares * stock.dailyChange;
+                        dailyPnlEl.textContent = `${dailyPnl >= 0 ? '+' : ''}$${dailyPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         dailyPnlEl.className = `value ${dailyPnl >= 0 ? 'positive' : 'negative'}`;
                     }
                     if (dailyPercentageEl) {
@@ -2340,10 +2340,10 @@
                         dailyPercentageEl.className = `percentage ${stock.dailyChangePercent >= 0 ? 'positive' : 'negative'}`;
                     }
                     
-                    // Total P&L (since base price)
+                    // Total P&L (total for all shares since base price)
                     if (totalPnlEl) {
-                        const totalPnl = effectivePrice - stock.basePrice;
-                        totalPnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`;
+                        const totalPnl = stock.shares * (effectivePrice - stock.basePrice);
+                        totalPnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         totalPnlEl.className = `value ${totalPnl >= 0 ? 'positive' : 'negative'}`;
                     }
                     if (totalPercentageEl) {
