@@ -615,52 +615,35 @@
             text-align: center;
         }
         
-        /* Column-specific widths for better header text containment */
-        .portfolio-table th:nth-child(1), .portfolio-table td:nth-child(1) { /* Symbol */
-            min-width: 80px;
-            width: 80px;
+        /* Responsive column widths based on content */
+        .portfolio-table th {
+            white-space: nowrap;
+            min-width: min-content;
+            width: fit-content;
+            padding: 16px 16px;
         }
         
-        .portfolio-table th:nth-child(2), .portfolio-table td:nth-child(2) { /* Shares */
-            min-width: 80px;
-            width: 80px;
+        .portfolio-table td {
+            white-space: nowrap;
+            min-width: min-content;
+            width: fit-content;
         }
         
-        .portfolio-table th:nth-child(3), .portfolio-table td:nth-child(3) { /* Avg Cost/Share */
-            min-width: 120px;
-            width: 120px;
-        }
-        
-        .portfolio-table th:nth-child(4), .portfolio-table td:nth-child(4) { /* Current Price */
-            min-width: 120px;
-            width: 120px;
-        }
-        
-        .portfolio-table th:nth-child(5), .portfolio-table td:nth-child(5) { /* Daily P&L */
-            min-width: 100px;
-            width: 100px;
-        }
-        
-        .portfolio-table th:nth-child(6), .portfolio-table td:nth-child(6) { /* Total P&L */
-            min-width: 100px;
-            width: 100px;
-        }
-        
-        .portfolio-table th:nth-child(7), .portfolio-table td:nth-child(7) { /* Allocation % */
-            min-width: 100px;
-            width: 100px;
+        /* Ensure table doesn't shrink below content width */
+        .portfolio-table {
+            width: max-content;
+            min-width: max-content;
         }
         
         /* Mobile-optimized table styles */
         @media (max-width: 768px) {
             .portfolio-table {
                 font-size: 0.75rem;
-                min-width: 700px; /* Ensure minimum width for proper column display */
             }
             
             .portfolio-table th,
             .portfolio-table td {
-                padding: 12px 8px;
+                padding: 12px 12px;
                 font-size: 0.8rem;
             }
             
@@ -1132,7 +1115,6 @@
 
             .portfolio-table {
                 font-size: 0.75rem;
-                min-width: 800px; /* Ensure table has minimum width for scrolling */
             }
 
             .portfolio-table th,
@@ -1224,7 +1206,6 @@
             }
 
             .portfolio-table {
-                min-width: 700px; /* Smaller minimum width for very small screens */
                 font-size: 0.6rem;
             }
 
