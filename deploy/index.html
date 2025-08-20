@@ -408,6 +408,13 @@
             padding: 20px 24px 16px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--dark-lighter);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .card-header:hover {
+            background: var(--card-hover);
+            cursor: pointer;
         }
         
         .card-title {
@@ -422,30 +429,20 @@
             gap: 12px;
         }
         
-        .collapse-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-        }
-        
-        .collapse-btn:hover {
-            background: var(--border);
-            color: var(--text-primary);
-        }
+
         
         .collapse-icon {
             font-size: 1.25rem;
             font-weight: bold;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        
+        .section-header:hover .collapse-icon,
+        .card-header:hover .collapse-icon {
+            opacity: 1;
         }
         
         .card-content {
@@ -457,11 +454,7 @@
             display: none;
         }
         
-        .summary-card.collapsed .collapse-icon,
-        .portfolio-section.collapsed .collapse-icon,
-        .column-controls.collapsed .collapse-icon {
-            transform: rotate(180deg);
-        }
+
 
         /* Portfolio Table */
         .portfolio-section {
@@ -517,6 +510,13 @@
             padding: 20px 24px 16px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--card-bg);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .section-header:hover {
+            background: var(--card-hover);
+            cursor: pointer;
         }
 
         .section-title {
@@ -1397,12 +1397,10 @@
 
         <!-- Total Wealth Section - Moved to top -->
         <div class="total-wealth-section" data-card-type="total-wealth">
-            <div class="section-header">
+            <div class="section-header" onclick="portfolioDashboard.toggleCard('total-wealth')" style="cursor: pointer;">
                 <div class="section-title">💰 Total Wealth</div>
                 <div class="header-controls">
-                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('total-wealth')" title="Toggle section">
-                        <span class="collapse-icon">−</span>
-                    </button>
+                    <span class="collapse-icon" id="total-wealth-icon">−</span>
                 </div>
             </div>
             
@@ -1441,12 +1439,10 @@
 
         <!-- Portfolio Holdings with Integrated Summaries -->
         <div class="portfolio-section" data-card-type="portfolio-holdings">
-            <div class="section-header">
+            <div class="section-header" onclick="portfolioDashboard.toggleCard('portfolio-holdings')" style="cursor: pointer;">
                 <div class="section-title">📊 Portfolio Holdings</div>
                 <div class="header-controls">
-                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('portfolio-holdings')" title="Toggle section">
-                        <span class="collapse-icon">−</span>
-                    </button>
+                    <span class="collapse-icon" id="portfolio-holdings-icon">−</span>
                 </div>
             </div>
             
@@ -1507,12 +1503,10 @@
         
         <!-- RSU Holdings Section - Now separate from Portfolio Holdings -->
         <div class="rsu-section" data-card-type="rsu-holdings">
-            <div class="section-header">
+            <div class="section-header" onclick="portfolioDashboard.toggleCard('rsu-holdings')" style="cursor: pointer;">
                 <div class="section-title">📈 RSU Holdings</div>
                 <div class="header-controls">
-                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('rsu-holdings')" title="Toggle section">
-                        <span class="collapse-icon">−</span>
-                    </button>
+                    <span class="collapse-icon" id="rsu-holdings-icon">−</span>
                 </div>
             </div>
             
@@ -1593,11 +1587,9 @@
 
         <!-- Column Controls - Moved below table -->
         <div class="column-controls" data-card-type="column-controls">
-            <div class="card-header">
+            <div class="card-header" onclick="portfolioDashboard.toggleCard('column-controls')" style="cursor: pointer;">
                 <h3>🎛️ Customize Table Columns</h3>
-                <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('column-controls')" title="Toggle section">
-                    <span class="collapse-icon">−</span>
-                </button>
+                <span class="collapse-icon" id="column-controls-icon">−</span>
             </div>
             <div class="card-content">
                 <div class="column-list" id="column-list">
@@ -1764,9 +1756,19 @@
                     if (isCollapsed) {
                         contentElement.classList.add('collapsed');
                         cardElement.classList.add('collapsed');
+                        // Show eye icon when collapsed
+                        if (collapseIcon) {
+                            collapseIcon.textContent = '👁️';
+                            collapseIcon.title = 'Click to expand';
+                        }
                     } else {
                         contentElement.classList.remove('collapsed');
                         cardElement.classList.remove('collapsed');
+                        // Show minus icon when expanded
+                        if (collapseIcon) {
+                            collapseIcon.textContent = '−';
+                            collapseIcon.title = 'Click to collapse';
+                        }
                     }
                 }
             }
