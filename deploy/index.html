@@ -931,15 +931,21 @@
             display: none; /* Hidden - removed from dashboard */
         }
 
-        /* Column Reorder Controls */
+        /* Column Reorder Controls - Modern Design */
         .column-controls {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 0;
             margin-bottom: 24px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-lg);
             overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .column-controls:hover {
+            box-shadow: var(--shadow-xl);
+            transform: translateY(-2px);
         }
 
         .column-controls h3 {
@@ -950,158 +956,216 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            padding: 20px 24px 16px 24px;
         }
 
         .column-controls h3::before {
             content: '';
             width: 4px;
-            height: 20px;
-            background: var(--gradient-secondary);
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent), #8B5CF6);
             border-radius: 2px;
         }
 
         .column-list {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 0 24px;
         }
 
-        .column-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 16px;
+        .column-item.modern {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 20px;
             font-size: 0.875rem;
             color: var(--text-secondary);
             user-select: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: space-between;
             position: relative;
+            overflow: hidden;
         }
 
-        .column-item:hover {
-            background: var(--border);
+        .column-item.modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--column-color);
+            opacity: 0.8;
+        }
+
+        .column-item.modern:hover {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+            border-color: var(--column-color);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .column-item.modern .column-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .column-order-badge {
+            background: linear-gradient(135deg, var(--column-color), rgba(139, 92, 246, 0.8));
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .column-order-badge::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--column-color), rgba(139, 92, 246, 0.8));
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .column-item.modern .column-name {
+            font-weight: 600;
             color: var(--text-primary);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+            font-size: 1.1rem;
+            min-width: 120px;
         }
 
-        .column-item .column-info {
+        .column-type {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8B5CF6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .column-item.modern .column-controls {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .column-item .column-order {
-            background: var(--accent);
-            color: var(--text-primary);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+        .column-item.modern .move-buttons {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .column-item .column-name {
-            font-weight: 500;
-            min-width: 120px;
-        }
-
-        .column-item .column-controls {
-            display: flex;
-            align-items: center;
             gap: 8px;
         }
 
-        .column-item .move-buttons {
-            display: flex;
-            gap: 4px;
-        }
-
-        .column-item .move-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            width: 28px;
-            height: 28px;
+        .move-btn.modern {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            backdrop-filter: blur(10px);
         }
 
-        .column-item .move-btn:hover {
-            background: var(--accent);
-            color: var(--text-primary);
-            border-color: var(--accent);
+        .move-btn.modern:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--column-color), rgba(139, 92, 246, 0.8));
+            color: white;
+            border-color: var(--column-color);
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        .column-item .move-btn:disabled {
+        .move-btn.modern:disabled {
             opacity: 0.3;
             cursor: not-allowed;
+            transform: none;
         }
 
-        .column-item .column-visibility {
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            transition: all 0.2s ease;
-            min-width: 60px;
-            text-align: center;
-        }
-
-        .column-item .column-visibility.visible {
-            background: var(--success);
-            color: var(--dark);
-        }
-
-        .column-item .column-visibility.hidden {
-            background: var(--danger);
-            color: var(--dark);
-        }
-
-        .column-item .column-visibility:hover {
-            transform: scale(1.1);
-        }
-
-        .reset-button {
-            background: var(--accent);
-            color: var(--text-primary);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 16px;
+        .visibility-toggle.modern {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        
-        .reset-button svg {
-            color: var(--text-primary);
-            flex-shrink: 0;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .reset-button:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
+        .visibility-toggle.modern.visible {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border-color: #10B981;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
-        
-        .reset-button:active {
-            transform: translateY(0);
+
+        .visibility-toggle.modern.hidden {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border-color: #EF4444;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .visibility-toggle.modern:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .column-controls-footer {
+            display: flex;
+            justify-content: center;
+            padding: 16px 24px 0 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reset-button.modern {
+            background: linear-gradient(135deg, #EF4444, #DC2626);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 14px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .reset-button.modern:hover {
+            background: linear-gradient(135deg, #DC2626, #B91C1C);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        .reset-button.modern svg {
+            color: white;
+            flex-shrink: 0;
         }
 
         /* Mobile Optimizations */
@@ -1118,8 +1182,47 @@
             .summary-card {
                 padding: 20px;
                 flex-direction: column;
-                text-align: center;
+            }
+            
+            /* Modern Column Controls Mobile */
+            .column-item.modern {
+                padding: 16px;
+                flex-direction: column;
                 gap: 16px;
+                align-items: stretch;
+            }
+            
+            .column-item.modern .column-info {
+                justify-content: center;
+                gap: 12px;
+            }
+            
+            .column-item.modern .column-controls {
+                justify-content: center;
+                gap: 16px;
+            }
+            
+            .move-btn.modern,
+            .visibility-toggle.modern {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .column-order-badge {
+                width: 32px;
+                height: 32px;
+                font-size: 0.875rem;
+            }
+            
+            .column-name {
+                font-size: 1rem;
+                min-width: auto;
+                text-align: center;
+            }
+            
+            .column-type {
+                font-size: 0.7rem;
+                padding: 3px 6px;
             }
             
             .summary-icon {
@@ -1713,7 +1816,7 @@
                 <h3>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     Customize Table Columns
                 </h3>
@@ -1722,13 +1825,15 @@
                 <div class="column-list" id="column-list">
                     <!-- Column items will be generated here -->
                 </div>
-                <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M3.51 15a9 9 0 0 0 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 1 20.49 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Reset to Default
-                </button>
+                <div class="column-controls-footer">
+                    <button class="reset-button modern" onclick="portfolioDashboard.resetColumnOrder()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3.51 15a9 9 0 0 0 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 1 20.49 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Reset to Default
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -2434,32 +2539,62 @@
                     const isFirst = index === 0;
                     const isLast = index === sortedColumns.length - 1;
                     
+                    // Define colors for different column types
+                    const getColumnColor = (key) => {
+                        switch(key) {
+                            case 'symbol': return '#3B82F6'; // Blue
+                            case 'shares': return '#10B981'; // Green
+                            case 'avgCost': return '#F59E0B'; // Amber
+                            case 'currentPrice': return '#8B5CF6'; // Purple
+                            case 'dailyPnL': return '#EF4444'; // Red
+                            case 'dailyPnLPercent': return '#DC2626'; // Dark Red
+                            case 'totalPnL': return '#059669'; // Dark Green
+                            case 'totalPnLPercent': return '#047857'; // Darker Green
+                            case 'allocation': return '#7C3AED'; // Violet
+                            default: return '#6B7280'; // Gray
+                        }
+                    };
+                    
+                    const columnColor = getColumnColor(column.key);
+                    
                     return `
-                        <div class="column-item" data-column-key="${column.key}">
+                        <div class="column-item modern" data-column-key="${column.key}" style="--column-color: ${columnColor}">
                             <div class="column-info">
-                                <span class="column-order">${index + 1}</span>
+                                <div class="column-order-badge">
+                                    <span class="order-number">${index + 1}</span>
+                                </div>
                                 <span class="column-name">${column.name}</span>
+                                <span class="column-type">${column.type}</span>
                             </div>
                             <div class="column-controls">
                                 <div class="move-buttons">
-                                    <button class="move-btn" 
+                                    <button class="move-btn modern" 
                                             onclick="portfolioDashboard.moveColumn('${column.key}', 'up')"
                                             ${isFirst ? 'disabled' : ''}
                                             title="Move up">
-                                        ↑
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
                                     </button>
-                                    <button class="move-btn" 
+                                    <button class="move-btn modern" 
                                             onclick="portfolioDashboard.moveColumn('${column.key}', 'down')"
                                             ${isLast ? 'disabled' : ''}
                                             title="Move down">
-                                        ↓
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
                                     </button>
                                 </div>
-                                <span class="column-visibility ${column.visible ? 'visible' : 'hidden'}" 
-                                      onclick="portfolioDashboard.toggleColumnVisibility('${column.key}')"
-                                      title="${column.visible ? 'Hide column' : 'Show column'}">
-                                    ${column.visible ? '👁️' : '🙈'}
-                                </span>
+                                <button class="visibility-toggle modern ${column.visible ? 'visible' : 'hidden'}" 
+                                        onclick="portfolioDashboard.toggleColumnVisibility('${column.key}')"
+                                        title="${column.visible ? 'Hide column' : 'Show column'}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        ${column.visible ? 
+                                            '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' :
+                                            '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+                                        }
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     `;
