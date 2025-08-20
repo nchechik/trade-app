@@ -1485,8 +1485,8 @@
                 
                 // RSU Data (EFN converted from CAD to USD: 28.554 CAD * 0.74 = ~21.00 USD)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, currentPrice: 0, dailyChange: 0, dailyChangePercent: 0 },
-                    { symbol: 'WIX', shares: 187, basePrice: 78.27, currentPrice: 0, dailyChange: 0, dailyChangePercent: 0 }
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, currentPrice: 21.00, dailyChange: 0, dailyChangePercent: 0 },
+                    { symbol: 'WIX', shares: 187, basePrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0 }
                 ];
                 
                 this.currentPrices = {};
@@ -1645,6 +1645,9 @@
                 this.loadSortState(); // Load sort state
                 this.ensureColumnOrderConsistency(); // Ensure column order is consistent
                 this.updateAllCardDisplays(); // Update card collapse states
+                
+                // Initialize RSU display with base values
+                this.updateRSUDisplay();
             }
             
             async loadPortfolioData() {
@@ -2282,7 +2285,9 @@
                 let totalRSUDailyPnL = 0;
                 
                 this.rsuData.forEach(stock => {
-                    const currentValue = stock.shares * stock.currentPrice;
+                    // Use currentPrice if available, otherwise fall back to basePrice
+                    const effectivePrice = stock.currentPrice > 0 ? stock.currentPrice : stock.basePrice;
+                    const currentValue = stock.shares * effectivePrice;
                     const baseValue = stock.shares * stock.basePrice;
                     const dailyPnL = stock.shares * stock.dailyChange;
                     
@@ -2294,7 +2299,7 @@
                     const changeEl = document.getElementById(`${stock.symbol.toLowerCase()}-change`);
                     const percentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-percentage`);
                     
-                    if (currentPriceEl) currentPriceEl.textContent = `$${stock.currentPrice.toFixed(2)}`;
+                    if (currentPriceEl) currentPriceEl.textContent = `$${effectivePrice.toFixed(2)}`;
                     if (changeEl) {
                         changeEl.textContent = `${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`;
                         changeEl.className = `value ${dailyPnL >= 0 ? 'positive' : 'negative'}`;
