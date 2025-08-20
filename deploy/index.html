@@ -79,52 +79,6 @@
             border-radius: 2px;
         }
         
-        .currency-toggle-section {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        .currency-toggle-btn {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 8px 16px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-        
-        .currency-toggle-btn:hover {
-            background: var(--card-hover);
-            border-color: var(--accent);
-        }
-        
-        .currency-symbol {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-        
-        .currency-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .toggle-arrow {
-            font-size: 0.75rem;
-            transition: transform 0.2s ease;
-        }
-        
-        .currency-toggle-btn.open .toggle-arrow {
-            transform: rotate(180deg);
-        }
-        
         .total-wealth-summary {
             display: flex;
             justify-content: center;
@@ -1322,6 +1276,53 @@
         .footer-info p {
             margin-bottom: 8px;
         }
+        
+        /* Currency Toggle Styles */
+        .currency-toggle-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .currency-toggle-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 8px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .currency-toggle-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+        
+        .currency-symbol {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .currency-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .toggle-arrow {
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .currency-toggle-btn.open .toggle-arrow {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body>
@@ -1745,6 +1746,9 @@
                 
                 // Initialize RSU display with base values
                 this.updateRSUDisplay();
+                
+                // Initialize currency display
+                this.updateCurrencyToggleDisplay();
             }
             
             async loadPortfolioData() {
