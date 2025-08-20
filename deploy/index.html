@@ -813,6 +813,13 @@
             text-align: center;
             font-weight: 500;
         }
+        
+        /* Percentage P&L cells - center aligned like allocation */
+        .pnl-cell[class*="dailyPnLPercent"],
+        .pnl-cell[class*="totalPnLPercent"] {
+            text-align: center;
+            font-weight: 500;
+        }
 
         /* Error Message Styling */
         .error-message {
@@ -1810,8 +1817,10 @@
                     { key: 'avgCost', name: 'Avg Cost/Share', type: 'number', visible: true, order: 2 },
                     { key: 'currentPrice', name: 'Current Price', type: 'number', visible: true, order: 3 },
                     { key: 'dailyPnL', name: 'Daily P&L', type: 'number', visible: true, order: 4 },
-                    { key: 'totalPnL', name: 'Total P&L', type: 'number', visible: true, order: 5 },
-                    { key: 'allocation', name: 'Allocation %', type: 'number', visible: true, order: 6 }
+                    { key: 'dailyPnLPercent', name: 'Daily P&L (%)', type: 'number', visible: true, order: 5 },
+                    { key: 'totalPnL', name: 'Total P&L', type: 'number', visible: true, order: 6 },
+                    { key: 'totalPnLPercent', name: 'Total P&L (%)', type: 'number', visible: true, order: 7 },
+                    { key: 'allocation', name: 'Allocation %', type: 'number', visible: true, order: 8 }
                 ];
                 
                 try {
@@ -2296,9 +2305,19 @@
                                 cellContent = `${dailyPnL >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(dailyPnL))}`;
                                 cellClass = `pnl-cell ${dailyPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
                                 break;
+                            case 'dailyPnLPercent':
+                                const dailyPnLPercent = currentPrice > 0 ? ((dailyPnL / (currentPrice * stock.shares)) * 100) : 0;
+                                cellContent = `${dailyPnLPercent >= 0 ? '+' : ''}${dailyPnLPercent.toFixed(2)}%`;
+                                cellClass = `pnl-cell ${dailyPnLPercent >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+                                break;
                             case 'totalPnL':
                                 cellContent = `${totalPnL >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(totalPnL))}`;
                                 cellClass = `pnl-cell ${totalPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+                                break;
+                            case 'totalPnLPercent':
+                                const totalPnLPercent = stock.avgCost > 0 ? (((currentPrice - stock.avgCost) / stock.avgCost) * 100) : 0;
+                                cellContent = `${totalPnLPercent >= 0 ? '+' : ''}${totalPnLPercent.toFixed(2)}%`;
+                                cellClass = `pnl-cell ${totalPnLPercent >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
                                 break;
                             case 'allocation':
                                 cellContent = `${allocation.toFixed(1)}%`;
