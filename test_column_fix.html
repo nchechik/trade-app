@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Movement Test - Fixed Version</title>
+    <style>
+        :root {
+            --primary: #00d4aa;
+            --success: #22c55e;
+            --danger: #dc2626;
+            --dark: #0f172a;
+            --dark-lighter: #1e293b;
+            --border: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --card-bg: #1e293b;
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --gradient-secondary: linear-gradient(135deg, #00d4aa, #00b4aa);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark);
+            color: var(--text-primary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .test-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .test-section h2 {
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .column-controls {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .column-controls h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .column-controls h3::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--gradient-secondary);
+            border-radius: 2px;
+        }
+
+        .column-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .column-item {
+            background: var(--dark-lighter);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            user-select: none;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .column-item:hover {
+            background: var(--border);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .column-item .column-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .column-item .column-order {
+            background: var(--primary);
+            color: var(--dark);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .column-item .column-name {
+            font-weight: 500;
+            min-width: 120px;
+        }
+
+        .column-item .column-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-item .move-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .column-item .move-btn {
+            background: var(--dark-lighter);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.75rem;
+        }
+
+        .column-item .move-btn:hover {
+            background: var(--primary);
+            color: var(--dark);
+            border-color: var(--primary);
+        }
+
+        .column-item .move-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .column-item .column-visibility {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .column-item .column-visibility.visible {
+            background: var(--success);
+            color: var(--dark);
+        }
+
+        .column-item .column-visibility.hidden {
+            background: var(--danger);
+            color: var(--dark);
+        }
+
+        .column-item .column-visibility:hover {
+            transform: scale(1.05);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .reset-button {
+            background: var(--gradient-secondary);
+            color: var(--dark);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .debug-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fix-button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .demo-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .demo-table th,
+        .demo-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .demo-table th {
+            background: var(--dark-lighter);
+            font-weight: 600;
+        }
+
+        .demo-table tr:hover {
+            background: var(--dark-lighter);
+        }
+
+        .log-section {
+            background: var(--dark-lighter);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-section h4 {
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .log-entry {
+            font-family: monospace;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            padding: 4px;
+            border-radius: 4px;
+            background: var(--dark);
+        }
+
+        .log-entry.success { color: var(--success); }
+        .log-entry.error { color: var(--danger); }
+        .log-entry.info { color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="test-section">
+            <h2>🎯 Column Movement Test - Fixed Version</h2>
+            <p>This tests the improved column movement logic that should move columns exactly 1 position at a time.</p>
+        </div>
+
+        <!-- Column Controls -->
+        <div class="column-controls">
+            <h3>🎛️ Customize Table Columns</h3>
+            <div class="column-list" id="column-list">
+                <!-- Column items will be generated here -->
+            </div>
+            <div class="button-group">
+                <button class="reset-button" onclick="testDashboard.resetColumnOrder()">
+                    🔄 Reset to Default
+                </button>
+                <button class="debug-button" onclick="testDashboard.debugColumnState()">
+                    🐛 Debug State
+                </button>
+                <button class="fix-button" onclick="testDashboard.ensureColumnOrderConsistency()">
+                    🔧 Fix Order
+                </button>
+            </div>
+        </div>
+
+        <!-- Demo Table -->
+        <div class="test-section">
+            <h2>📊 Demo Table</h2>
+            <div id="demo-table-container">
+                <!-- Table will be generated here -->
+            </div>
+        </div>
+
+        <!-- Debug Log -->
+        <div class="test-section">
+            <h2>📝 Debug Log</h2>
+            <div class="log-section">
+                <h4>Console Output</h4>
+                <div id="log-container">
+                    <div class="log-entry info">Ready to test column movement...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class TestDashboard {
+            constructor() {
+                // Sample data
+                this.sampleData = [
+                    { symbol: 'AAPL', shares: 10, price: 150.00, pnl: 500.00 },
+                    { symbol: 'GOOGL', shares: 5, price: 2800.00, pnl: -200.00 },
+                    { symbol: 'MSFT', shares: 8, price: 300.00, pnl: 800.00 }
+                ];
+                
+                // Column configuration
+                this.columns = [
+                    { key: 'symbol', name: 'Symbol', type: 'string', visible: true, order: 0 },
+                    { key: 'shares', name: 'Shares', type: 'number', visible: true, order: 1 },
+                    { key: 'price', name: 'Price', type: 'number', visible: true, order: 2 },
+                    { key: 'pnl', name: 'P&L', type: 'number', visible: true, order: 3 }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupColumnControls();
+                this.renderDemoTable();
+                this.ensureColumnOrderConsistency();
+                this.log('Dashboard initialized', 'info');
+            }
+            
+            setupColumnControls() {
+                this.renderColumnControls();
+            }
+            
+            renderColumnControls() {
+                const columnList = document.getElementById('column-list');
+                if (!columnList) return;
+                
+                // Sort columns by current order
+                const sortedColumns = [...this.columns].sort((a, b) => a.order - b.order);
+                
+                columnList.innerHTML = sortedColumns.map((column, index) => {
+                    const isFirst = index === 0;
+                    const isLast = index === sortedColumns.length - 1;
+                    
+                    return `
+                        <div class="column-item" data-column-key="${column.key}">
+                            <div class="column-info">
+                                <span class="column-order">${index + 1}</span>
+                                <span class="column-name">${column.name}</span>
+                            </div>
+                            <div class="column-controls">
+                                <div class="move-buttons">
+                                    <button class="move-btn" 
+                                            onclick="testDashboard.moveColumn('${column.key}', 'up')"
+                                            ${isFirst ? 'disabled' : ''}
+                                            title="Move up">
+                                        ↑
+                                    </button>
+                                    <button class="move-btn" 
+                                            onclick="testDashboard.moveColumn('${column.key}', 'down')"
+                                            ${isLast ? 'disabled' : ''}
+                                            title="Move down">
+                                        ↓
+                                    </button>
+                                </div>
+                                <span class="column-visibility ${column.visible ? 'visible' : 'hidden'}" 
+                                      onclick="testDashboard.toggleColumnVisibility('${column.key}')"
+                                      title="${column.visible ? 'Hide column' : 'Show column'}">
+                                    ${column.visible ? '👁️' : '🙈'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            moveColumn(columnKey, direction) {
+                const currentIndex = this.columns.findIndex(c => c.key === columnKey);
+                if (currentIndex === -1) return;
+                
+                let newIndex;
+                if (direction === 'up' && currentIndex > 0) {
+                    newIndex = currentIndex - 1;
+                } else if (direction === 'down' && currentIndex < this.columns.length - 1) {
+                    newIndex = currentIndex + 1;
+                } else {
+                    return; // Invalid move
+                }
+                
+                // Get column names for the message
+                const currentColumn = this.columns[currentIndex];
+                
+                // Store the original order for debugging
+                const originalOrder = this.columns.map(c => ({ key: c.key, order: c.order }));
+                
+                // Create a new array with the reordered columns
+                const newColumns = [...this.columns];
+                const columnToMove = newColumns.splice(currentIndex, 1)[0];
+                newColumns.splice(newIndex, 0, columnToMove);
+                
+                // Reassign order values sequentially to ensure consistency
+                newColumns.forEach((column, index) => {
+                    column.order = index;
+                });
+                
+                // Validate the move was successful
+                const movedColumn = newColumns.find(c => c.key === columnKey);
+                if (!movedColumn || movedColumn.order !== newIndex) {
+                    this.log(`Column move failed: ${columnKey}`, 'error');
+                    return;
+                }
+                
+                // Update the columns array
+                this.columns = newColumns;
+                
+                // Re-render controls and table
+                this.renderColumnControls();
+                this.renderDemoTable();
+                
+                // Show success message
+                const directionText = direction === 'up' ? 'up' : 'down';
+                this.log(`Moved "${currentColumn.name}" ${directionText}`, 'success');
+                
+                // Debug logging
+                this.log(`Column moved: ${columnKey} from position ${currentIndex} to ${newIndex}`, 'info');
+                this.log(`New order: ${this.columns.map(c => `${c.key}:${c.order}`).join(', ')}`, 'info');
+            }
+            
+            toggleColumnVisibility(columnKey) {
+                const column = this.columns.find(c => c.key === columnKey);
+                if (column) {
+                    column.visible = !column.visible;
+                    this.renderColumnControls();
+                    this.renderDemoTable();
+                    
+                    // Show success message
+                    const action = column.visible ? 'shown' : 'hidden';
+                    this.log(`Column "${column.name}" ${action}`, 'success');
+                }
+            }
+            
+            resetColumnOrder() {
+                this.columns.forEach((column, index) => {
+                    column.order = index;
+                    column.visible = true;
+                });
+                this.renderColumnControls();
+                this.renderDemoTable();
+                
+                // Show success message
+                this.log('Column order reset to default', 'success');
+            }
+            
+            ensureColumnOrderConsistency() {
+                // Sort columns by current order and reassign sequential order values
+                this.columns.sort((a, b) => a.order - b.order);
+                this.columns.forEach((column, index) => {
+                    column.order = index;
+                });
+                this.log('Column order consistency ensured', 'info');
+                this.debugColumnState();
+            }
+            
+            debugColumnState() {
+                this.log('Current column state:', 'info');
+                this.columns.forEach((col, index) => {
+                    this.log(`  ${index}: ${col.key} (order: ${col.order}, visible: ${col.visible})`, 'info');
+                });
+            }
+            
+            renderDemoTable() {
+                const container = document.getElementById('demo-table-container');
+                if (!container) return;
+                
+                // Get visible columns sorted by order
+                const visibleColumns = this.columns
+                    .filter(col => col.visible)
+                    .sort((a, b) => a.order - b.order);
+                
+                let tableHTML = `
+                    <table class="demo-table">
+                        <thead>
+                            <tr>
+                `;
+                
+                // Render headers
+                visibleColumns.forEach(column => {
+                    tableHTML += `<th>${column.name}</th>`;
+                });
+                
+                tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Render data rows
+                this.sampleData.forEach(row => {
+                    tableHTML += '<tr>';
+                    visibleColumns.forEach(column => {
+                        let cellContent = '';
+                        switch (column.key) {
+                            case 'symbol':
+                                cellContent = row.symbol;
+                                break;
+                            case 'shares':
+                                cellContent = row.shares.toLocaleString();
+                                break;
+                            case 'price':
+                                cellContent = `$${row.price.toFixed(2)}`;
+                                break;
+                            case 'pnl':
+                                const pnlClass = row.pnl >= 0 ? 'positive' : 'negative';
+                                cellContent = `<span class="${pnlClass}">${row.pnl >= 0 ? '+' : ''}$${row.pnl.toFixed(2)}</span>`;
+                                break;
+                        }
+                        tableHTML += `<td>${cellContent}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                
+                tableHTML += '</tbody></table>';
+                container.innerHTML = tableHTML;
+            }
+            
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('log-container');
+                if (!logContainer) return;
+                
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                
+                logContainer.appendChild(logEntry);
+                
+                // Keep only last 50 log entries
+                while (logContainer.children.length > 50) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+                
+                // Auto-scroll to bottom
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Also log to console
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            }
+        }
+        
+        // Initialize the test dashboard
+        const testDashboard = new TestDashboard();
+        
+        // Override console.log to also show in our log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (testDashboard && testDashboard.log) {
+                testDashboard.log(args.join(' '), 'info');
+            }
+        };
+    </script>
+</body>
+</html>
