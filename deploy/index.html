@@ -871,6 +871,12 @@
             <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
                 🔄 Reset to Default
             </button>
+            <button class="debug-button" onclick="portfolioDashboard.debugColumnState()" style="margin-left: 10px; background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
+                🐛 Debug State
+            </button>
+            <button class="fix-button" onclick="portfolioDashboard.ensureColumnOrderConsistency()" style="margin-left: 10px; background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
+                🔧 Fix Order
+            </button>
         </div>
 
         <!-- Footer -->
@@ -936,10 +942,18 @@
                     if (saved) {
                         const parsed = JSON.parse(saved);
                         // Merge saved config with default to handle new columns
-                        return defaultColumns.map(defaultCol => {
+                        const loadedColumns = defaultColumns.map(defaultCol => {
                             const savedCol = parsed.find(c => c.key === defaultCol.key);
                             return savedCol ? { ...defaultCol, ...savedCol } : defaultCol;
                         });
+                        
+                        // Ensure order values are sequential and consistent
+                        loadedColumns.sort((a, b) => a.order - b.order);
+                        loadedColumns.forEach((column, index) => {
+                            column.order = index;
+                        });
+                        
+                        return loadedColumns;
                     }
                 } catch (error) {
                     console.warn('Failed to load column config from localStorage:', error);
@@ -986,6 +1000,7 @@
                 this.setupTableSorting();
                 this.setupColumnControls();
                 this.loadSortState(); // Load sort state
+                this.ensureColumnOrderConsistency(); // Ensure column order is consistent
             }
             
             async loadPortfolioData() {
@@ -1348,10 +1363,28 @@
                 // Get column names for the message
                 const currentColumn = this.columns[currentIndex];
                 
-                // Swap the order values
-                const tempOrder = this.columns[currentIndex].order;
-                this.columns[currentIndex].order = this.columns[newIndex].order;
-                this.columns[newIndex].order = tempOrder;
+                // Store the original order for debugging
+                const originalOrder = this.columns.map(c => ({ key: c.key, order: c.order }));
+                
+                // Create a new array with the reordered columns
+                const newColumns = [...this.columns];
+                const columnToMove = newColumns.splice(currentIndex, 1)[0];
+                newColumns.splice(newIndex, 0, columnToMove);
+                
+                // Reassign order values sequentially to ensure consistency
+                newColumns.forEach((column, index) => {
+                    column.order = index;
+                });
+                
+                // Validate the move was successful
+                const movedColumn = newColumns.find(c => c.key === columnKey);
+                if (!movedColumn || movedColumn.order !== newIndex) {
+                    console.error('Column move failed:', { columnKey, currentIndex, newIndex, movedColumn });
+                    return;
+                }
+                
+                // Update the columns array
+                this.columns = newColumns;
                 
                 // Re-render controls and table
                 this.renderColumnControls();
@@ -1361,6 +1394,16 @@
                 // Show success message
                 const directionText = direction === 'up' ? 'up' : 'down';
                 this.showSuccessMessage(`Moved "${currentColumn.name}" ${directionText}`);
+                
+                // Debug logging
+                console.log('Column moved successfully:', {
+                    column: columnKey,
+                    direction,
+                    from: currentIndex,
+                    to: newIndex,
+                    originalOrder: originalOrder.map(c => `${c.key}:${c.order}`),
+                    newOrder: this.columns.map(c => `${c.key}:${c.order}`)
+                });
             }
             
             toggleColumnVisibility(columnKey) {
@@ -1436,6 +1479,25 @@
                         }
                     }, 300);
                 }, 3000);
+            }
+            
+            // Debug method to check column state
+            debugColumnState() {
+                console.log('Current column state:');
+                this.columns.forEach((col, index) => {
+                    console.log(`  ${index}: ${col.key} (order: ${col.order}, visible: ${col.visible})`);
+                });
+            }
+            
+            // Ensure column order consistency
+            ensureColumnOrderConsistency() {
+                // Sort columns by current order and reassign sequential order values
+                this.columns.sort((a, b) => a.order - b.order);
+                this.columns.forEach((column, index) => {
+                    column.order = index;
+                });
+                console.log('Column order consistency ensured');
+                this.debugColumnState();
             }
             
             updateLastUpdate() {
