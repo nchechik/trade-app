@@ -1571,9 +1571,7 @@
                 
                 // Update daily P&L
                 document.getElementById('daily-pnl').textContent = `$${this.totalDailyPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                const dailyChangeElement = document.getElementById('daily-pnl-change');
-                dailyChangeElement.textContent = this.totalDailyPnL >= 0 ? '📈 Positive' : '📉 Negative';
-                dailyChangeElement.className = `summary-change ${this.totalDailyPnL >= 0 ? 'positive' : 'negative'}`;
+
                 
                 // Calculate and display daily P&L percentage
                 const dailyPnLPercent = (this.totalDailyPnL / this.totalPortfolioValue) * 100;
@@ -1583,9 +1581,7 @@
                 
                 // Update total P&L
                 document.getElementById('total-pnl').textContent = `$${this.totalPortfolioPnL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                const totalChangeElement = document.getElementById('total-pnl-change');
-                totalChangeElement.textContent = this.totalPortfolioPnL >= 0 ? '📈 Profitable' : '📉 Negative';
-                totalChangeElement.className = `summary-change ${this.totalPortfolioPnL >= 0 ? 'positive' : 'negative'}`;
+
                 
                 // Calculate and display total P&L percentage
                 const totalPnLPercent = (this.totalPortfolioPnL / this.totalPortfolioCost) * 100;
