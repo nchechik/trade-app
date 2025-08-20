@@ -2156,8 +2156,15 @@
             }
             
             renderPortfolioSummary() {
+                console.log('🎯 renderPortfolioSummary called');
+                console.log(`💰 Total Portfolio Value: $${this.totalPortfolioValue.toFixed(2)} USD`);
+                console.log(`💱 Currency: ${this.currentCurrency}, Symbol: ${this.currencySymbol}, Rate: ${this.exchangeRate}`);
+                
                 // Update total portfolio value - Now converts with currency toggle
-                document.getElementById('total-value').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
+                const totalValueElement = document.getElementById('total-value');
+                const convertedValue = this.formatCurrencyValue(this.totalPortfolioValue);
+                totalValueElement.textContent = `${this.currencySymbol}${convertedValue}`;
+                console.log(`📊 Displaying: ${this.currencySymbol}${convertedValue}`);
                 
                 // Calculate and display total portfolio value change percentage
                 const totalValueChangePercent = ((this.totalPortfolioValue - this.totalPortfolioCost) / this.totalPortfolioCost) * 100;
@@ -2187,6 +2194,8 @@
                 
                 // Update total wealth display (portfolio + RSU)
                 this.updateTotalWealthDisplay();
+                
+                console.log('✅ Portfolio summary rendered');
             }
             
             setLoadingState(isLoading) {
@@ -2730,12 +2739,19 @@
             }
             
             updateAllDisplays() {
+                console.log('🔄 updateAllDisplays called - updating all displays');
+                console.log(`💰 Current currency: ${this.currentCurrency}, Symbol: ${this.currencySymbol}, Rate: ${this.exchangeRate}`);
+                
                 // Recalculate portfolio metrics with new currency
                 this.calculatePortfolioMetrics();
+                console.log(`📊 Portfolio value after calculation: $${this.totalPortfolioValue.toFixed(2)} USD`);
+                
                 this.renderPortfolioSummary();
                 this.renderPortfolioTable(); // Add this to refresh the portfolio table
                 this.updateRSUDisplay();
                 this.updateTotalWealthDisplay();
+                
+                console.log('✅ All displays updated');
             }
         }
         
