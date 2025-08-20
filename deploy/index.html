@@ -1323,6 +1323,71 @@
         .currency-toggle-btn.open .toggle-arrow {
             transform: rotate(180deg);
         }
+        
+        /* Total Wealth Section Styles */
+        .total-wealth-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .wealth-summary {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card.wealth-total {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--text-primary);
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .wealth-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .breakdown-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .breakdown-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .wealth-breakdown {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .breakdown-item {
+                padding: 10px 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1523,6 +1588,37 @@
                                 <span class="percentage" id="wix-total-percentage">0.00%</span>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Wealth Section - Combined Portfolio + RSU -->
+        <div class="total-wealth-section">
+            <div class="section-header">
+                <div class="section-title">💰 Total Wealth</div>
+            </div>
+            
+            <div class="card-content">
+                <div class="wealth-summary">
+                    <div class="summary-card main-card wealth-total">
+                        <div class="summary-icon">🏆</div>
+                        <div class="summary-content">
+                            <div class="summary-value" id="total-wealth-value">$--</div>
+                            <div class="summary-label">Total Portfolio + RSU Value</div>
+                            <div class="summary-percentage" id="total-wealth-change">--</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="wealth-breakdown">
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">Portfolio Value:</div>
+                        <div class="breakdown-value" id="wealth-portfolio-value">$--</div>
+                    </div>
+                    <div class="breakdown-item">
+                        <div class="breakdown-label">RSU Value:</div>
+                        <div class="breakdown-value" id="wealth-rsu-value">$--</div>
                     </div>
                 </div>
             </div>
@@ -2550,20 +2646,45 @@
                 const totalWealth = this.totalPortfolioValue + this.totalRSUValue;
                 const totalDailyPnL = this.totalDailyPnL + this.totalRSUDailyPnL;
                 
-                // Update the main total value display to show total wealth with currency conversion
+                // Update the main total value display to show portfolio value only (not total wealth)
                 const totalValueEl = document.getElementById('total-value');
                 if (totalValueEl) {
-                    totalValueEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(totalWealth)}`;
+                    totalValueEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
                 }
                 
-                // Update the total value change percentage
+                // Update the portfolio value change percentage (not total wealth)
                 const totalValueChangeEl = document.getElementById('total-value-change');
-                if (totalValueChangeEl && totalWealth > 0) {
+                if (totalValueChangeEl && this.totalPortfolioValue > 0) {
+                    const portfolioBaseValue = this.portfolioData.reduce((sum, stock) => sum + (stock.shares * stock.avgCost), 0);
+                    const portfolioChangePercent = ((this.totalPortfolioValue - portfolioBaseValue) / portfolioBaseValue) * 100;
+                    totalValueChangeEl.textContent = `${portfolioChangePercent >= 0 ? '+' : ''}${portfolioChangePercent.toFixed(2)}%`;
+                    totalValueChangeEl.className = `summary-percentage ${portfolioChangePercent >= 0 ? 'positive' : 'negative'}`;
+                }
+                
+                // Update Total Wealth section
+                const totalWealthValueEl = document.getElementById('total-wealth-value');
+                const totalWealthChangeEl = document.getElementById('total-wealth-change');
+                const wealthPortfolioEl = document.getElementById('wealth-portfolio-value');
+                const wealthRSUEl = document.getElementById('wealth-rsu-value');
+                
+                if (totalWealthValueEl) {
+                    totalWealthValueEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(totalWealth)}`;
+                }
+                
+                if (totalWealthChangeEl && totalWealth > 0) {
                     const totalBaseValue = this.portfolioData.reduce((sum, stock) => sum + (stock.shares * stock.avgCost), 0) + 
                                          this.rsuData.reduce((sum, stock) => sum + (stock.shares * stock.basePrice), 0);
                     const totalChangePercent = ((totalWealth - totalBaseValue) / totalBaseValue) * 100;
-                    totalValueChangeEl.textContent = `${totalChangePercent >= 0 ? '+' : ''}${totalChangePercent.toFixed(2)}%`;
-                    totalValueChangeEl.className = `summary-percentage ${totalChangePercent >= 0 ? 'positive' : 'negative'}`;
+                    totalWealthChangeEl.textContent = `${totalChangePercent >= 0 ? '+' : ''}${totalChangePercent.toFixed(2)}%`;
+                    totalWealthChangeEl.className = `summary-percentage ${totalChangePercent >= 0 ? 'positive' : 'negative'}`;
+                }
+                
+                if (wealthPortfolioEl) {
+                    wealthPortfolioEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
+                }
+                
+                if (wealthRSUEl) {
+                    wealthRSUEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalRSUValue)}`;
                 }
                 
                 // Update header wealth summary
