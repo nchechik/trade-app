@@ -1384,7 +1384,7 @@
                                             <span class="value" id="efn-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Change:</span>
+                                            <span class="label">Per Share Change:</span>
                                             <span class="value" id="efn-change">$0.00</span>
                                             <span class="percentage" id="efn-percentage">0.00%</span>
                                         </div>
@@ -1406,7 +1406,7 @@
                                             <span class="value" id="wix-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Change:</span>
+                                            <span class="label">Per Share Change:</span>
                                             <span class="value" id="wix-change">$0.00</span>
                                             <span class="percentage" id="wix-percentage">0.00%</span>
                                         </div>
@@ -2317,8 +2317,10 @@
                     
                     if (currentPriceEl) currentPriceEl.textContent = `$${effectivePrice.toFixed(2)}`;
                     if (changeEl) {
-                        changeEl.textContent = `${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`;
-                        changeEl.className = `value ${dailyPnL >= 0 ? 'positive' : 'negative'}`;
+                        // Show per-share change, not total change
+                        const perShareChange = stock.dailyChange;
+                        changeEl.textContent = `${perShareChange >= 0 ? '+' : ''}$${perShareChange.toFixed(2)}`;
+                        changeEl.className = `value ${perShareChange >= 0 ? 'positive' : 'negative'}`;
                     }
                     if (percentageEl) {
                         percentageEl.textContent = `${stock.dailyChangePercent >= 0 ? '+' : ''}${stock.dailyChangePercent.toFixed(2)}%`;
