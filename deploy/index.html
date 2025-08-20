@@ -79,41 +79,7 @@
             border-radius: 2px;
         }
         
-        .total-wealth-summary {
-            display: flex;
-            justify-content: center;
-            gap: 32px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .wealth-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .wealth-item.total {
-            border-top: 2px solid var(--accent);
-            padding-top: 8px;
-            margin-top: 8px;
-        }
-        
-        .wealth-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-        }
-        
-        .wealth-value {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            font-family: 'Monaco', 'Menlo', monospace;
-        }
+
 
         .logo {
             display: flex;
@@ -773,19 +739,7 @@
                 font-size: 0.75rem;
             }
             
-            /* Header wealth summary mobile styles */
-            .total-wealth-summary {
-                gap: 20px;
-                margin-top: 16px;
-            }
-            
-            .wealth-item {
-                gap: 2px;
-            }
-            
-            .wealth-value {
-                font-size: 1rem;
-            }
+
         }
 
         .portfolio-table tr:hover {
@@ -1412,18 +1366,40 @@
                     <span class="toggle-arrow">▼</span>
                 </button>
             </div>
-            <div class="total-wealth-summary">
-                <div class="wealth-item">
-                    <span class="wealth-label">Portfolio:</span>
-                    <span class="wealth-value" id="header-portfolio-value">$--</span>
+
+        </div>
+
+        <!-- Total Wealth Section - Moved to top -->
+        <div class="total-wealth-section" data-card-type="total-wealth">
+            <div class="section-header">
+                <div class="section-title">💰 Total Wealth</div>
+                <div class="header-controls">
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('total-wealth')" title="Toggle section">
+                        <span class="collapse-icon">−</span>
+                    </button>
                 </div>
-                <div class="wealth-item">
-                    <span class="wealth-label">RSU:</span>
-                    <span class="wealth-value" id="header-rsu-value">$--</span>
+            </div>
+            
+            <div class="card-content">
+                <div class="wealth-summary">
+                    <div class="summary-card wealth-total">
+                        <div class="summary-content">
+                            <div class="summary-value" id="total-wealth-value">$--</div>
+                            <div class="summary-label">Total Portfolio + RSU Value</div>
+                            <div class="summary-percentage" id="total-wealth-change">--</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="wealth-item total">
-                    <span class="wealth-label">Total Wealth:</span>
-                    <span class="wealth-value" id="header-total-wealth">$--</span>
+                
+                <div class="wealth-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Portfolio Value</span>
+                        <span class="breakdown-value" id="wealth-portfolio-value">$--</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">RSU Value</span>
+                        <span class="breakdown-value" id="wealth-rsu-value">$--</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1593,36 +1569,7 @@
             </div>
         </div>
         
-        <!-- Total Wealth Section - Combined Portfolio + RSU -->
-        <div class="total-wealth-section">
-            <div class="section-header">
-                <div class="section-title">💰 Total Wealth</div>
-            </div>
-            
-            <div class="card-content">
-                <div class="wealth-summary">
-                    <div class="summary-card main-card wealth-total">
-                        <div class="summary-icon">🏆</div>
-                        <div class="summary-content">
-                            <div class="summary-value" id="total-wealth-value">$--</div>
-                            <div class="summary-label">Total Portfolio + RSU Value</div>
-                            <div class="summary-percentage" id="total-wealth-change">--</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="wealth-breakdown">
-                    <div class="breakdown-item">
-                        <div class="breakdown-label">Portfolio Value:</div>
-                        <div class="breakdown-value" id="wealth-portfolio-value">$--</div>
-                    </div>
-                    <div class="breakdown-item">
-                        <div class="breakdown-label">RSU Value:</div>
-                        <div class="breakdown-value" id="wealth-rsu-value">$--</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Column Controls - Moved below table -->
         <div class="column-controls" data-card-type="column-controls">
@@ -2687,20 +2634,7 @@
                     wealthRSUEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalRSUValue)}`;
                 }
                 
-                // Update header wealth summary
-                const headerPortfolioEl = document.getElementById('header-portfolio-value');
-                const headerRSUEl = document.getElementById('header-rsu-value');
-                const headerTotalEl = document.getElementById('header-total-wealth');
-                
-                if (headerPortfolioEl) {
-                    headerPortfolioEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
-                }
-                if (headerRSUEl) {
-                    headerRSUEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalRSUValue)}`;
-                }
-                if (headerTotalEl) {
-                    headerTotalEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(totalWealth)}`;
-                }
+
             }
             
             // Currency exchange methods
