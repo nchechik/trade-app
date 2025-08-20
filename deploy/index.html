@@ -78,6 +78,42 @@
             background: var(--gradient-primary);
             border-radius: 2px;
         }
+        
+        .total-wealth-summary {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .wealth-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .wealth-item.total {
+            border-top: 2px solid var(--accent);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+        
+        .wealth-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+        
+        .wealth-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
 
         .logo {
             display: flex;
@@ -208,6 +244,112 @@
         }
 
         .summary-percentage.negative {
+            color: var(--danger);
+            background: rgba(234, 57, 67, 0.1);
+        }
+        
+        /* RSU Section Styles */
+        .rsu-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 0;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        
+        .rsu-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .rsu-stocks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+        
+        .rsu-stock-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .rsu-stock-card:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border);
+        }
+        
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .stock-symbol {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stock-shares {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .stock-details {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .stock-price, .stock-current, .stock-change {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        
+        .stock-price .label, .stock-current .label, .stock-change .label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .stock-price .value, .stock-current .value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .stock-change .value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        .stock-change .percentage {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        
+        .stock-change .percentage.positive {
+            color: var(--success);
+            background: rgba(22, 199, 132, 0.1);
+        }
+        
+        .stock-change .percentage.negative {
             color: var(--danger);
             background: rgba(234, 57, 67, 0.1);
         }
@@ -586,6 +728,38 @@
                 font-size: 0.8rem;
                 width: 100%;
                 justify-content: center;
+            }
+            
+            /* RSU Mobile Styles */
+            .rsu-stocks {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .rsu-stock-card {
+                padding: 16px;
+            }
+            
+            .stock-symbol {
+                font-size: 1.25rem;
+            }
+            
+            .stock-shares {
+                font-size: 0.75rem;
+            }
+            
+            /* Header wealth summary mobile styles */
+            .total-wealth-summary {
+                gap: 20px;
+                margin-top: 16px;
+            }
+            
+            .wealth-item {
+                gap: 2px;
+            }
+            
+            .wealth-value {
+                font-size: 1rem;
             }
         }
 
@@ -1094,6 +1268,20 @@
                     <p>Real-time portfolio tracking & analysis</p>
                 </div>
             </div>
+            <div class="total-wealth-summary">
+                <div class="wealth-item">
+                    <span class="wealth-label">Portfolio:</span>
+                    <span class="wealth-value" id="header-portfolio-value">$--</span>
+                </div>
+                <div class="wealth-item">
+                    <span class="wealth-label">RSU:</span>
+                    <span class="wealth-value" id="header-rsu-value">$--</span>
+                </div>
+                <div class="wealth-item total">
+                    <span class="wealth-label">Total Wealth:</span>
+                    <span class="wealth-value" id="header-total-wealth">$--</span>
+                </div>
+            </div>
         </div>
 
         <!-- Error Message -->
@@ -1151,6 +1339,79 @@
                                 <div class="summary-label">Total Profit</div>
                                 <div class="summary-value" id="total-pnl">$--</div>
                                 <div class="summary-percentage" id="total-pnl-percentage">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RSU Section -->
+                <div class="rsu-section" data-card-type="rsu-holdings">
+                    <div class="card-header">
+                        <h3 class="section-title">🏢 RSU Holdings</h3>
+                        <div class="header-controls">
+                            <button class="refresh-button" onclick="portfolioDashboard.refreshRSUPrices()">
+                                <span>🔄</span>
+                                <span>Refresh</span>
+                            </button>
+                            <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('rsu-holdings')" title="Toggle section">
+                                <span class="collapse-icon">−</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="rsu-summary">
+                            <div class="summary-card main-card rsu-total">
+                                <div class="summary-icon">🏢</div>
+                                <div class="summary-content">
+                                    <div class="summary-label">TOTAL RSU VALUE</div>
+                                    <div class="summary-value" id="rsu-total-value">$0.00</div>
+                                </div>
+                            </div>
+                            
+                            <div class="rsu-stocks">
+                                <div class="rsu-stock-card">
+                                    <div class="stock-header">
+                                        <div class="stock-symbol">EFN</div>
+                                        <div class="stock-shares">2,537 shares</div>
+                                    </div>
+                                    <div class="stock-details">
+                                        <div class="stock-price">
+                                            <span class="label">Base Price:</span>
+                                            <span class="value">$21.00 USD</span>
+                                        </div>
+                                        <div class="stock-current">
+                                            <span class="label">Current:</span>
+                                            <span class="value" id="efn-current-price">$0.00</span>
+                                        </div>
+                                        <div class="stock-change">
+                                            <span class="label">Change:</span>
+                                            <span class="value" id="efn-change">$0.00</span>
+                                            <span class="percentage" id="efn-percentage">0.00%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="rsu-stock-card">
+                                    <div class="stock-header">
+                                        <div class="stock-symbol">WIX</div>
+                                        <div class="stock-shares">187 shares</div>
+                                    </div>
+                                    <div class="stock-details">
+                                        <div class="stock-price">
+                                            <span class="label">Base Price:</span>
+                                            <span class="value">$78.27 USD</span>
+                                        </div>
+                                        <div class="stock-current">
+                                            <span class="label">Current:</span>
+                                            <span class="value" id="wix-current-price">$0.00</span>
+                                        </div>
+                                        <div class="stock-change">
+                                            <span class="label">Change:</span>
+                                            <span class="value" id="wix-change">$0.00</span>
+                                            <span class="percentage" id="wix-percentage">0.00%</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1222,11 +1483,19 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
+                // RSU Data (EFN converted from CAD to USD: 28.554 CAD * 0.74 = ~21.00 USD)
+                this.rsuData = [
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, currentPrice: 0, dailyChange: 0, dailyChangePercent: 0 },
+                    { symbol: 'WIX', shares: 187, basePrice: 78.27, currentPrice: 0, dailyChange: 0, dailyChangePercent: 0 }
+                ];
+                
                 this.currentPrices = {};
                 this.previousPrices = {};
                 this.totalPortfolioValue = 0;
                 this.totalDailyPnL = 0;
                 this.totalPortfolioPnL = 0;
+                this.totalRSUValue = 0;
+                this.totalRSUDailyPnL = 0;
                 this.sortColumn = null;
                 this.sortDirection = 'asc';
                 
@@ -1286,7 +1555,8 @@
             loadCardStates() {
                 const defaultStates = {
                     'portfolio-holdings': false,
-                    'column-controls': false
+                    'column-controls': false,
+                    'rsu-holdings': false
                 };
                 
                 try {
@@ -1390,6 +1660,7 @@
                     // Render the dashboard
                     this.renderPortfolioTable();
                     this.renderPortfolioSummary();
+                    this.updateRSUDisplay();
                     this.updateLastUpdate();
                     this.saveSortState(); // Save sort state
                     
@@ -1438,6 +1709,9 @@
                 }
                 
                 console.log(`📊 Data Summary: ${successCount} real prices, ${errorCount} simulated prices`);
+                
+                // Load RSU prices
+                await this.loadRSUPrices();
             }
             
             async fetchStockPrice(symbol) {
@@ -1515,6 +1789,18 @@
                 // Calculate allocation percentages
                 this.portfolioData.forEach(stock => {
                     stock.allocation = (stock.currentValue / this.totalPortfolioValue) * 100;
+                });
+                
+                // Calculate RSU metrics
+                this.totalRSUValue = 0;
+                this.totalRSUDailyPnL = 0;
+                
+                this.rsuData.forEach(stock => {
+                    const currentValue = stock.shares * stock.currentPrice;
+                    const dailyPnL = stock.shares * stock.dailyChange;
+                    
+                    this.totalRSUValue += currentValue;
+                    this.totalRSUDailyPnL += dailyPnL;
                 });
             }
             
@@ -1662,6 +1948,9 @@
                 const totalPnLPercentElement = document.getElementById('total-pnl-percentage');
                 totalPnLPercentElement.textContent = `${totalPnLPercent >= 0 ? '+' : ''}${totalPnLPercent.toFixed(2)}%`;
                 totalPnLPercentElement.className = `summary-percentage ${totalPnLPercent >= 0 ? 'positive' : 'negative'}`;
+                
+                // Update total wealth display (portfolio + RSU)
+                this.updateTotalWealthDisplay();
             }
             
             setLoadingState(isLoading) {
@@ -1954,6 +2243,112 @@
                 // Re-render the table with sorted data
                 this.renderPortfolioTable();
                 this.saveSortState(); // Save sort state
+            }
+            
+            // RSU Methods
+            async refreshRSUPrices() {
+                try {
+                    await this.loadRSUPrices();
+                    this.updateRSUDisplay();
+                    this.updateTotalWealthDisplay();
+                } catch (error) {
+                    console.error('Error refreshing RSU prices:', error);
+                    this.showErrorMessage('Failed to refresh RSU prices');
+                }
+            }
+            
+            async loadRSUPrices() {
+                const symbols = this.rsuData.map(stock => stock.symbol);
+                
+                for (const symbol of symbols) {
+                    try {
+                        const price = await this.fetchStockPrice(symbol);
+                        if (price && price.c) {
+                            const stock = this.rsuData.find(s => s.symbol === symbol);
+                            if (stock) {
+                                stock.currentPrice = price.c;
+                                stock.dailyChange = price.d;
+                                stock.dailyChangePercent = price.dp;
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching price for ${symbol}:`, error);
+                    }
+                }
+            }
+            
+            updateRSUDisplay() {
+                let totalRSUValue = 0;
+                let totalRSUDailyPnL = 0;
+                
+                this.rsuData.forEach(stock => {
+                    const currentValue = stock.shares * stock.currentPrice;
+                    const baseValue = stock.shares * stock.basePrice;
+                    const dailyPnL = stock.shares * stock.dailyChange;
+                    
+                    totalRSUValue += currentValue;
+                    totalRSUDailyPnL += dailyPnL;
+                    
+                    // Update individual stock displays
+                    const currentPriceEl = document.getElementById(`${stock.symbol.toLowerCase()}-current-price`);
+                    const changeEl = document.getElementById(`${stock.symbol.toLowerCase()}-change`);
+                    const percentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-percentage`);
+                    
+                    if (currentPriceEl) currentPriceEl.textContent = `$${stock.currentPrice.toFixed(2)}`;
+                    if (changeEl) {
+                        changeEl.textContent = `${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`;
+                        changeEl.className = `value ${dailyPnL >= 0 ? 'positive' : 'negative'}`;
+                    }
+                    if (percentageEl) {
+                        percentageEl.textContent = `${stock.dailyChangePercent >= 0 ? '+' : ''}${stock.dailyChangePercent.toFixed(2)}%`;
+                        percentageEl.className = `percentage ${stock.dailyChangePercent >= 0 ? 'positive' : 'negative'}`;
+                    }
+                });
+                
+                // Update total RSU value
+                this.totalRSUValue = totalRSUValue;
+                this.totalRSUDailyPnL = totalRSUDailyPnL;
+                
+                const rsuTotalEl = document.getElementById('rsu-total-value');
+                if (rsuTotalEl) {
+                    rsuTotalEl.textContent = `$${totalRSUValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            }
+            
+            updateTotalWealthDisplay() {
+                const totalWealth = this.totalPortfolioValue + this.totalRSUValue;
+                const totalDailyPnL = this.totalDailyPnL + this.totalRSUDailyPnL;
+                
+                // Update the main total value display to show total wealth
+                const totalValueEl = document.getElementById('total-value');
+                if (totalValueEl) {
+                    totalValueEl.textContent = `$${totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                
+                // Update the total value change percentage
+                const totalValueChangeEl = document.getElementById('total-value-change');
+                if (totalValueChangeEl && totalWealth > 0) {
+                    const totalBaseValue = this.portfolioData.reduce((sum, stock) => sum + (stock.shares * stock.avgCost), 0) + 
+                                         this.rsuData.reduce((sum, stock) => sum + (stock.shares * stock.basePrice), 0);
+                    const totalChangePercent = ((totalWealth - totalBaseValue) / totalBaseValue) * 100;
+                    totalValueChangeEl.textContent = `${totalChangePercent >= 0 ? '+' : ''}${totalChangePercent.toFixed(2)}%`;
+                    totalValueChangeEl.className = `summary-percentage ${totalChangePercent >= 0 ? 'positive' : 'negative'}`;
+                }
+                
+                // Update header wealth summary
+                const headerPortfolioEl = document.getElementById('header-portfolio-value');
+                const headerRSUEl = document.getElementById('header-rsu-value');
+                const headerTotalEl = document.getElementById('header-total-wealth');
+                
+                if (headerPortfolioEl) {
+                    headerPortfolioEl.textContent = `$${this.totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (headerRSUEl) {
+                    headerRSUEl.textContent = `$${this.totalRSUValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+                if (headerTotalEl) {
+                    headerTotalEl.textContent = `$${totalWealth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
             }
         }
         
