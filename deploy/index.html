@@ -1394,7 +1394,7 @@
                         <div class="summary-icon">💰</div>
                         <div class="summary-content">
                             <div class="summary-value" id="total-value">$--</div>
-                            <div class="summary-label">Total Portfolio Value (USD)</div>
+                            <div class="summary-label">Total Portfolio Value</div>
                             <div class="summary-percentage" id="total-value-change">--</div>
                         </div>
                     </div>
@@ -2101,19 +2101,19 @@
                                 cellClass = 'shares-cell';
                                 break;
                             case 'avgCost':
-                                cellContent = `$${stock.avgCost.toFixed(2)}`;
+                                cellContent = `${this.currencySymbol}${this.formatCurrencyValue(stock.avgCost)}`;
                                 cellClass = 'price-cell';
                                 break;
                             case 'currentPrice':
-                                cellContent = `$${currentPrice.toFixed(2)}`;
+                                cellContent = `${this.currencySymbol}${this.formatCurrencyValue(currentPrice)}`;
                                 cellClass = 'price-cell';
                                 break;
                             case 'dailyPnL':
-                                cellContent = `${dailyPnL >= 0 ? '+' : ''}$${dailyPnL.toFixed(2)}`;
+                                cellContent = `${dailyPnL >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(dailyPnL))}`;
                                 cellClass = `pnl-cell ${dailyPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
                                 break;
                             case 'totalPnL':
-                                cellContent = `${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}`;
+                                cellContent = `${totalPnL >= 0 ? '+' : ''}${this.currencySymbol}${this.formatCurrencyValue(Math.abs(totalPnL))}`;
                                 cellClass = `pnl-cell ${totalPnL >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
                                 break;
                             case 'allocation':
@@ -2156,8 +2156,8 @@
             }
             
             renderPortfolioSummary() {
-                // Update total portfolio value - ALWAYS in USD
-                document.getElementById('total-value').textContent = `$${this.totalPortfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                // Update total portfolio value - Now converts with currency toggle
+                document.getElementById('total-value').textContent = `${this.currencySymbol}${this.formatCurrencyValue(this.totalPortfolioValue)}`;
                 
                 // Calculate and display total portfolio value change percentage
                 const totalValueChangePercent = ((this.totalPortfolioValue - this.totalPortfolioCost) / this.totalPortfolioCost) * 100;
