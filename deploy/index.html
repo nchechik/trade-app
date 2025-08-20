@@ -132,7 +132,7 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 24px;
+            padding: 0;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -202,22 +202,88 @@
         .summary-percentage.negative {
             color: var(--danger);
         }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--dark-lighter);
+        }
+        
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+        }
+        
+        .collapse-btn:hover {
+            background: var(--border);
+            color: var(--text-primary);
+        }
+        
+        .collapse-icon {
+            font-size: 1.25rem;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+        }
+        
+        .card-content {
+            padding: 20px 24px 24px 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .card-content.collapsed {
+            display: none;
+        }
+        
+        .summary-card.collapsed .collapse-icon,
+        .portfolio-section.collapsed .collapse-icon,
+        .column-controls.collapsed .collapse-icon {
+            transform: rotate(180deg);
+        }
 
         /* Portfolio Table */
         .portfolio-section {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 24px;
+            padding: 0;
             box-shadow: var(--shadow-lg);
             margin-bottom: 24px;
+            overflow: hidden;
         }
 
         .section-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            margin-bottom: 0;
+            padding: 20px 24px 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--dark-lighter);
         }
 
         .section-title {
@@ -490,16 +556,17 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 20px;
+            padding: 0;
             margin-bottom: 24px;
             box-shadow: var(--shadow-lg);
+            overflow: hidden;
         }
 
         .column-controls h3 {
             font-size: 1.125rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 16px;
+            margin-bottom: 0;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -829,54 +896,83 @@
 
         <!-- Portfolio Summary -->
         <div class="portfolio-summary">
-            <div class="summary-card total-value">
-                <div class="summary-value" id="total-value">$--</div>
-                <div class="summary-label">Total Portfolio Value</div>
-                <div class="summary-percentage" id="total-value-change">--</div>
+            <div class="summary-card total-value" data-card-type="total-value">
+                <div class="card-header">
+                    <div class="card-title">Total Portfolio Value</div>
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('total-value')" title="Toggle card">
+                        <span class="collapse-icon">−</span>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="summary-value" id="total-value">$--</div>
+                    <div class="summary-percentage" id="total-value-change">--</div>
+                </div>
             </div>
-            <div class="summary-card daily-pnl">
-                <div class="summary-value" id="daily-pnl">$--</div>
-                <div class="summary-label">Daily P&L</div>
-                <div class="summary-change" id="daily-pnl-change">--</div>
-                <div class="summary-percentage" id="daily-pnl-percentage">--</div>
+            <div class="summary-card daily-pnl" data-card-type="daily-pnl">
+                <div class="card-header">
+                    <div class="card-title">Daily P&L</div>
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('daily-pnl')" title="Toggle card">
+                        <span class="collapse-icon">−</span>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="summary-value" id="daily-pnl">$--</div>
+                    <div class="summary-change" id="daily-pnl-change">--</div>
+                    <div class="summary-percentage" id="daily-pnl-percentage">--</div>
+                </div>
             </div>
-            <div class="summary-card total-pnl">
-                <div class="summary-value" id="total-pnl">$--</div>
-                <div class="summary-label">Total P&L</div>
-                <div class="summary-change" id="total-pnl-change">--</div>
-                <div class="summary-percentage" id="total-pnl-percentage">--</div>
+            <div class="summary-card total-pnl" data-card-type="total-pnl">
+                <div class="card-header">
+                    <div class="card-title">Total P&L</div>
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('total-pnl')" title="Toggle card">
+                        <span class="collapse-icon">−</span>
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="summary-value" id="total-pnl">$--</div>
+                    <div class="summary-change" id="total-pnl-change">--</div>
+                    <div class="summary-percentage" id="total-pnl-percentage">--</div>
+                </div>
             </div>
         </div>
 
         <!-- Portfolio Table -->
-        <div class="portfolio-section">
+        <div class="portfolio-section" data-card-type="portfolio-holdings">
             <div class="section-header">
                 <div class="section-title">📊 Portfolio Holdings</div>
-                <button class="refresh-button" id="refresh-button" onclick="portfolioDashboard.refreshData()">
-                    🔄 Refresh Data
-                </button>
+                <div class="header-controls">
+                    <button class="refresh-button" id="refresh-button" onclick="portfolioDashboard.refreshData()">
+                        🔄 Refresh Data
+                    </button>
+                    <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('portfolio-holdings')" title="Toggle section">
+                        <span class="collapse-icon">−</span>
+                    </button>
+                </div>
             </div>
             
-            <div id="portfolio-table">
-                <div class="loading">Loading portfolio data...</div>
+            <div class="card-content">
+                <div id="portfolio-table">
+                    <div class="loading">Loading portfolio data...</div>
+                </div>
             </div>
         </div>
 
         <!-- Column Controls - Moved below table -->
-        <div class="column-controls">
-            <h3>🎛️ Customize Table Columns</h3>
-            <div class="column-list" id="column-list">
-                <!-- Column items will be generated here -->
+        <div class="column-controls" data-card-type="column-controls">
+            <div class="card-header">
+                <h3>🎛️ Customize Table Columns</h3>
+                <button class="collapse-btn" onclick="portfolioDashboard.toggleCard('column-controls')" title="Toggle section">
+                    <span class="collapse-icon">−</span>
+                </button>
             </div>
-            <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
-                🔄 Reset to Default
-            </button>
-            <button class="debug-button" onclick="portfolioDashboard.debugColumnState()" style="margin-left: 10px; background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                🐛 Debug State
-            </button>
-            <button class="fix-button" onclick="portfolioDashboard.ensureColumnOrderConsistency()" style="margin-left: 10px; background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">
-                🔧 Fix Order
-            </button>
+            <div class="card-content">
+                <div class="column-list" id="column-list">
+                    <!-- Column items will be generated here -->
+                </div>
+                <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
+                    🔄 Reset to Default
+                </button>
+            </div>
         </div>
 
         <!-- Footer -->
@@ -920,10 +1016,13 @@
                 this.sortColumn = null;
                 this.sortDirection = 'asc';
                 
-                // Column configuration with localStorage persistence
-                this.columns = this.loadColumnConfig();
-                
-                this.init();
+                            // Column configuration with localStorage persistence
+            this.columns = this.loadColumnConfig();
+            
+            // Card collapse state with localStorage persistence
+            this.cardStates = this.loadCardStates();
+            
+            this.init();
             }
             
             loadColumnConfig() {
@@ -970,6 +1069,69 @@
                 }
             }
             
+            loadCardStates() {
+                const defaultStates = {
+                    'total-value': false,
+                    'daily-pnl': false,
+                    'total-pnl': false,
+                    'portfolio-holdings': false,
+                    'column-controls': false
+                };
+                
+                try {
+                    const saved = localStorage.getItem('portfolio-card-states');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        return { ...defaultStates, ...parsed };
+                    }
+                } catch (error) {
+                    console.warn('Failed to load card states from localStorage:', error);
+                }
+                
+                return defaultStates;
+            }
+            
+            saveCardStates() {
+                try {
+                    localStorage.setItem('portfolio-card-states', JSON.stringify(this.cardStates));
+                } catch (error) {
+                    console.warn('Failed to save card states to localStorage:', error);
+                }
+            }
+            
+            toggleCard(cardType) {
+                if (this.cardStates.hasOwnProperty(cardType)) {
+                    this.cardStates[cardType] = !this.cardStates[cardType];
+                    this.saveCardStates();
+                    this.updateCardDisplay(cardType);
+                }
+            }
+            
+            updateCardDisplay(cardType) {
+                const cardElement = document.querySelector(`[data-card-type="${cardType}"]`);
+                if (!cardElement) return;
+                
+                const isCollapsed = this.cardStates[cardType];
+                const contentElement = cardElement.querySelector('.card-content');
+                const collapseIcon = cardElement.querySelector('.collapse-icon');
+                
+                if (contentElement) {
+                    if (isCollapsed) {
+                        contentElement.classList.add('collapsed');
+                        cardElement.classList.add('collapsed');
+                    } else {
+                        contentElement.classList.remove('collapsed');
+                        cardElement.classList.remove('collapsed');
+                    }
+                }
+            }
+            
+            updateAllCardDisplays() {
+                Object.keys(this.cardStates).forEach(cardType => {
+                    this.updateCardDisplay(cardType);
+                });
+            }
+            
             loadSortState() {
                 try {
                     const saved = localStorage.getItem('portfolio-sort');
@@ -1001,6 +1163,7 @@
                 this.setupColumnControls();
                 this.loadSortState(); // Load sort state
                 this.ensureColumnOrderConsistency(); // Ensure column order is consistent
+                this.updateAllCardDisplays(); // Update card collapse states
             }
             
             async loadPortfolioData() {
@@ -1363,9 +1526,6 @@
                 // Get column names for the message
                 const currentColumn = this.columns[currentIndex];
                 
-                // Store the original order for debugging
-                const originalOrder = this.columns.map(c => ({ key: c.key, order: c.order }));
-                
                 // Create a new array with the reordered columns
                 const newColumns = [...this.columns];
                 const columnToMove = newColumns.splice(currentIndex, 1)[0];
@@ -1394,16 +1554,6 @@
                 // Show success message
                 const directionText = direction === 'up' ? 'up' : 'down';
                 this.showSuccessMessage(`Moved "${currentColumn.name}" ${directionText}`);
-                
-                // Debug logging
-                console.log('Column moved successfully:', {
-                    column: columnKey,
-                    direction,
-                    from: currentIndex,
-                    to: newIndex,
-                    originalOrder: originalOrder.map(c => `${c.key}:${c.order}`),
-                    newOrder: this.columns.map(c => `${c.key}:${c.order}`)
-                });
             }
             
             toggleColumnVisibility(columnKey) {
@@ -1481,14 +1631,6 @@
                 }, 3000);
             }
             
-            // Debug method to check column state
-            debugColumnState() {
-                console.log('Current column state:');
-                this.columns.forEach((col, index) => {
-                    console.log(`  ${index}: ${col.key} (order: ${col.order}, visible: ${col.visible})`);
-                });
-            }
-            
             // Ensure column order consistency
             ensureColumnOrderConsistency() {
                 // Sort columns by current order and reassign sequential order values
@@ -1496,8 +1638,6 @@
                 this.columns.forEach((column, index) => {
                     column.order = index;
                 });
-                console.log('Column order consistency ensured');
-                this.debugColumnState();
             }
             
             updateLastUpdate() {
