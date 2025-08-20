@@ -615,10 +615,47 @@
             text-align: center;
         }
         
+        /* Column-specific widths for better header text containment */
+        .portfolio-table th:nth-child(1), .portfolio-table td:nth-child(1) { /* Symbol */
+            min-width: 80px;
+            width: 80px;
+        }
+        
+        .portfolio-table th:nth-child(2), .portfolio-table td:nth-child(2) { /* Shares */
+            min-width: 80px;
+            width: 80px;
+        }
+        
+        .portfolio-table th:nth-child(3), .portfolio-table td:nth-child(3) { /* Avg Cost/Share */
+            min-width: 120px;
+            width: 120px;
+        }
+        
+        .portfolio-table th:nth-child(4), .portfolio-table td:nth-child(4) { /* Current Price */
+            min-width: 120px;
+            width: 120px;
+        }
+        
+        .portfolio-table th:nth-child(5), .portfolio-table td:nth-child(5) { /* Daily P&L */
+            min-width: 100px;
+            width: 100px;
+        }
+        
+        .portfolio-table th:nth-child(6), .portfolio-table td:nth-child(6) { /* Total P&L */
+            min-width: 100px;
+            width: 100px;
+        }
+        
+        .portfolio-table th:nth-child(7), .portfolio-table td:nth-child(7) { /* Allocation % */
+            min-width: 100px;
+            width: 100px;
+        }
+        
         /* Mobile-optimized table styles */
         @media (max-width: 768px) {
             .portfolio-table {
                 font-size: 0.75rem;
+                min-width: 700px; /* Ensure minimum width for proper column display */
             }
             
             .portfolio-table th,
