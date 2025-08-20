@@ -2722,6 +2722,7 @@
             
             formatCurrencyValue(value) {
                 const convertedValue = value * this.exchangeRate;
+                console.log(`🔄 Converting ${value} USD to ${convertedValue} ${this.currentCurrency} (rate: ${this.exchangeRate})`);
                 return convertedValue.toLocaleString('en-US', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
