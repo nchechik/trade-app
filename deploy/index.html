@@ -1764,6 +1764,8 @@
             
             async fetchStockPriceFMP(symbol) {
                 try {
+                    console.log(`🔄 Fetching FMP price for ${symbol}...`);
+                    
                     // Using Financial Modeling Prep API for non-US stocks
                     const response = await fetch(`https://financialmodelingprep.com/api/v3/quote/${symbol}?apikey=4cBVPmlgvDzNlbRTYZWD7V0iXE2ONBhM`);
                     
@@ -1772,23 +1774,31 @@
                     }
                     
                     const data = await response.json();
+                    console.log(`📊 FMP raw response for ${symbol}:`, data);
                     
-                    if (data && data[0] && data[0].price && data[0].previousClose) {
-                        const currentPrice = parseFloat(data[0].price);
-                        const previousClose = parseFloat(data[0].previousClose);
+                    if (data && Array.isArray(data) && data.length > 0 && data[0]) {
+                        const stockData = data[0];
+                        console.log(`📋 FMP stock data for ${symbol}:`, stockData);
                         
-                        // Validate the price data
-                        if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
-                            console.log(`✅ FMP ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
-                            return {
-                                current: currentPrice,
-                                previous: previousClose
-                            };
+                        if (stockData.price && stockData.previousClose) {
+                            const currentPrice = parseFloat(stockData.price);
+                            const previousClose = parseFloat(stockData.previousClose);
+                            
+                            // Validate the price data
+                            if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
+                                console.log(`✅ FMP ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
+                                return {
+                                    current: currentPrice,
+                                    previous: previousClose
+                                };
+                            } else {
+                                console.log(`❌ FMP ${symbol}: Invalid price data - Current: ${stockData.price}, Previous: ${stockData.previousClose}`);
+                            }
                         } else {
-                            console.log(`❌ FMP ${symbol}: Invalid price data - Current: ${data[0].price}, Previous: ${data[0].previousClose}`);
+                            console.log(`❌ FMP ${symbol}: Missing price fields - price: ${stockData.price}, previousClose: ${stockData.previousClose}`);
                         }
                     } else {
-                        console.log(`❌ FMP ${symbol}: No quote data available`);
+                        console.log(`❌ FMP ${symbol}: Invalid data structure - data:`, data);
                     }
                     return null;
                 } catch (error) {
@@ -2312,14 +2322,20 @@
                 for (const symbol of symbols) {
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
+                        console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
+                        
                         let price = null;
                         
                         // Use appropriate API based on stock configuration
                         if (stock && stock.api === 'fmp') {
+                            console.log(`🌍 Using FMP API for ${symbol}`);
                             price = await this.fetchStockPriceFMP(symbol);
                         } else {
+                            console.log(`🇺🇸 Using Finnhub API for ${symbol}`);
                             price = await this.fetchStockPrice(symbol);
                         }
+                        
+                        console.log(`📊 Price result for ${symbol}:`, price);
                         
                         if (price && price.current) {
                             if (stock) {
@@ -2332,7 +2348,7 @@
                                 console.log(`✅ RSU ${symbol} (${stock.api}): $${price.current} (Change: $${dailyChange.toFixed(2)}, ${dailyChangePercent.toFixed(2)}%)`);
                             }
                         } else {
-                            console.log(`⚠️ No price data for RSU ${symbol}`);
+                            console.log(`⚠️ No price data for RSU ${symbol} - price:`, price);
                         }
                     } catch (error) {
                         console.error(`Error fetching price for RSU ${symbol}:`, error);
