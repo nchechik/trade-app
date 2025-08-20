@@ -533,6 +533,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
         }
 
         .column-item:hover {
@@ -542,8 +543,33 @@
         }
 
         .column-item.dragging {
-            opacity: 0.5;
-            transform: rotate(5deg);
+            opacity: 0.8;
+            transform: rotate(2deg) scale(1.05);
+            z-index: 1000;
+            box-shadow: var(--shadow-xl);
+            background: var(--primary);
+            color: var(--dark);
+        }
+
+        .column-item.dragging * {
+            pointer-events: none;
+        }
+
+        .column-item.drop-zone {
+            border: 2px dashed var(--primary);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .column-item.drop-zone::before {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 2px;
         }
 
         .column-item .drag-handle {
@@ -741,17 +767,6 @@
             </div>
         </div>
 
-        <!-- Column Controls -->
-        <div class="column-controls">
-            <h3>🎛️ Customize Table Columns</h3>
-            <div class="column-list" id="column-list">
-                <!-- Column items will be generated here -->
-            </div>
-            <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
-                🔄 Reset to Default
-            </button>
-        </div>
-
         <!-- Portfolio Summary -->
         <div class="portfolio-summary">
             <div class="summary-card total-value">
@@ -785,6 +800,17 @@
             <div id="portfolio-table">
                 <div class="loading">Loading portfolio data...</div>
             </div>
+        </div>
+
+        <!-- Column Controls - Moved below table -->
+        <div class="column-controls">
+            <h3>🎛️ Customize Table Columns</h3>
+            <div class="column-list" id="column-list">
+                <!-- Column items will be generated here -->
+            </div>
+            <button class="reset-button" onclick="portfolioDashboard.resetColumnOrder()">
+                🔄 Reset to Default
+            </button>
         </div>
 
         <!-- Footer -->
@@ -828,8 +854,14 @@
                 this.sortColumn = null;
                 this.sortDirection = 'asc';
                 
-                // Column configuration
-                this.columns = [
+                // Column configuration with localStorage persistence
+                this.columns = this.loadColumnConfig();
+                
+                this.init();
+            }
+            
+            loadColumnConfig() {
+                const defaultColumns = [
                     { key: 'symbol', name: 'Symbol', type: 'string', visible: true, order: 0 },
                     { key: 'shares', name: 'Shares', type: 'number', visible: true, order: 1 },
                     { key: 'avgCost', name: 'Avg Cost/Share', type: 'number', visible: true, order: 2 },
@@ -839,7 +871,53 @@
                     { key: 'allocation', name: 'Allocation %', type: 'number', visible: true, order: 6 }
                 ];
                 
-                this.init();
+                try {
+                    const saved = localStorage.getItem('portfolio-columns');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        // Merge saved config with default to handle new columns
+                        return defaultColumns.map(defaultCol => {
+                            const savedCol = parsed.find(c => c.key === defaultCol.key);
+                            return savedCol ? { ...defaultCol, ...savedCol } : defaultCol;
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Failed to load column config from localStorage:', error);
+                }
+                
+                return defaultColumns;
+            }
+            
+            saveColumnConfig() {
+                try {
+                    localStorage.setItem('portfolio-columns', JSON.stringify(this.columns));
+                } catch (error) {
+                    console.warn('Failed to save column config to localStorage:', error);
+                }
+            }
+            
+            loadSortState() {
+                try {
+                    const saved = localStorage.getItem('portfolio-sort');
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        this.sortColumn = parsed.column;
+                        this.sortDirection = parsed.direction;
+                    }
+                } catch (error) {
+                    console.warn('Failed to load sort state from localStorage:', error);
+                }
+            }
+            
+            saveSortState() {
+                try {
+                    localStorage.setItem('portfolio-sort', JSON.stringify({
+                        column: this.sortColumn,
+                        direction: this.sortDirection
+                    }));
+                } catch (error) {
+                    console.warn('Failed to save sort state to localStorage:', error);
+                }
             }
             
             init() {
@@ -847,6 +925,7 @@
                 this.startAutoRefresh();
                 this.setupTableSorting();
                 this.setupColumnControls();
+                this.loadSortState(); // Load sort state
             }
             
             async loadPortfolioData() {
@@ -863,6 +942,7 @@
                     this.renderPortfolioTable();
                     this.renderPortfolioSummary();
                     this.updateLastUpdate();
+                    this.saveSortState(); // Save sort state
                     
                 } catch (error) {
                     console.error('Error loading portfolio data:', error);
@@ -997,6 +1077,13 @@
                     return;
                 }
                 
+                // Store current scroll position
+                const tableWrapper = tableContainer.querySelector('.table-container');
+                let scrollLeft = 0;
+                if (tableWrapper) {
+                    scrollLeft = tableWrapper.scrollLeft;
+                }
+                
                 // Get visible columns sorted by order
                 const visibleColumns = this.columns
                     .filter(col => col.visible)
@@ -1072,6 +1159,14 @@
                 
                 tableHTML += '</tbody></table></div>';
                 tableContainer.innerHTML = tableHTML;
+                
+                // Restore scroll position after a short delay to ensure DOM is ready
+                setTimeout(() => {
+                    const newTableWrapper = tableContainer.querySelector('.table-container');
+                    if (newTableWrapper && scrollLeft > 0) {
+                        newTableWrapper.scrollLeft = scrollLeft;
+                    }
+                }, 10);
             }
             
             renderPortfolioSummary() {
@@ -1159,34 +1254,85 @@
                 if (!columnList) return;
                 
                 let draggedItem = null;
+                let draggedIndex = -1;
                 
                 columnList.addEventListener('dragstart', (e) => {
                     draggedItem = e.target;
+                    draggedIndex = Array.from(columnList.children).indexOf(draggedItem);
                     e.target.classList.add('dragging');
+                    
+                    // Set drag image to prevent flashing
+                    const dragImage = e.target.cloneNode(true);
+                    dragImage.style.opacity = '0.5';
+                    dragImage.style.position = 'absolute';
+                    dragImage.style.top = '-1000px';
+                    document.body.appendChild(dragImage);
+                    e.dataTransfer.setDragImage(dragImage, 0, 0);
+                    
+                    // Remove the temporary drag image after a short delay
+                    setTimeout(() => {
+                        if (document.body.contains(dragImage)) {
+                            document.body.removeChild(dragImage);
+                        }
+                    }, 100);
                 });
                 
                 columnList.addEventListener('dragend', (e) => {
                     e.target.classList.remove('dragging');
+                    // Remove all drop zone indicators
+                    columnList.querySelectorAll('.drop-zone').forEach(item => {
+                        item.classList.remove('drop-zone');
+                    });
+                    draggedItem = null;
+                    draggedIndex = -1;
                 });
                 
                 columnList.addEventListener('dragover', (e) => {
                     e.preventDefault();
+                    if (!draggedItem) return;
+                    
+                    // Remove previous drop zone indicators
+                    columnList.querySelectorAll('.drop-zone').forEach(item => {
+                        item.classList.remove('drop-zone');
+                    });
+                    
                     const afterElement = this.getDragAfterElement(columnList, e.clientX);
-                    if (afterElement == null) {
-                        columnList.appendChild(draggedItem);
-                    } else {
-                        columnList.insertBefore(draggedItem, afterElement);
+                    if (afterElement !== draggedItem && afterElement !== draggedItem.nextSibling) {
+                        if (afterElement) {
+                            columnList.insertBefore(draggedItem, afterElement);
+                            // Add drop zone indicator
+                            afterElement.classList.add('drop-zone');
+                        } else {
+                            columnList.appendChild(draggedItem);
+                        }
                     }
                 });
                 
                 columnList.addEventListener('drop', (e) => {
                     e.preventDefault();
-                    this.updateColumnOrder();
+                    if (draggedItem) {
+                        // Remove all drop zone indicators
+                        columnList.querySelectorAll('.drop-zone').forEach(item => {
+                            item.classList.remove('drop-zone');
+                        });
+                        this.updateColumnOrder();
+                    }
+                });
+                
+                // Handle drag leave to clean up drop zones
+                columnList.addEventListener('dragleave', (e) => {
+                    if (!columnList.contains(e.relatedTarget)) {
+                        columnList.querySelectorAll('.drop-zone').forEach(item => {
+                            item.classList.remove('drop-zone');
+                        });
+                    }
                 });
             }
             
             getDragAfterElement(container, x) {
                 const draggableElements = [...container.querySelectorAll('.column-item:not(.dragging)')];
+                
+                if (draggableElements.length === 0) return null;
                 
                 return draggableElements.reduce((closest, child) => {
                     const box = child.getBoundingClientRect();
@@ -1212,6 +1358,7 @@
                 
                 // Re-render table with new column order
                 this.renderPortfolioTable();
+                this.saveColumnConfig(); // Save column order
             }
             
             toggleColumnVisibility(columnKey) {
@@ -1220,6 +1367,7 @@
                     column.visible = !column.visible;
                     this.renderColumnControls();
                     this.renderPortfolioTable();
+                    this.saveColumnConfig(); // Save visibility
                 }
             }
             
@@ -1230,6 +1378,7 @@
                 });
                 this.renderColumnControls();
                 this.renderPortfolioTable();
+                this.saveColumnConfig(); // Save reset
             }
             
             updateLastUpdate() {
@@ -1320,6 +1469,7 @@
                 
                 // Re-render the table with sorted data
                 this.renderPortfolioTable();
+                this.saveSortState(); // Save sort state
             }
         }
         
