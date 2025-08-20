@@ -313,14 +313,14 @@
             gap: 12px;
         }
         
-        .stock-price, .stock-current, .stock-change {
+        .stock-price, .stock-current, .stock-change, .stock-total-pnl {
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 0.875rem;
         }
         
-        .stock-price .label, .stock-current .label, .stock-change .label {
+        .stock-price .label, .stock-current .label, .stock-change .label, .stock-total-pnl .label {
             color: var(--text-muted);
             font-weight: 500;
         }
@@ -331,25 +331,25 @@
             font-family: 'Monaco', 'Menlo', monospace;
         }
         
-        .stock-change .value {
+        .stock-change .value, .stock-total-pnl .value {
             color: var(--text-primary);
             font-weight: 600;
             font-family: 'Monaco', 'Menlo', monospace;
         }
         
-        .stock-change .percentage {
+        .stock-change .percentage, .stock-total-pnl .percentage {
             font-size: 0.75rem;
             padding: 2px 8px;
             border-radius: 12px;
             font-weight: 600;
         }
         
-        .stock-change .percentage.positive {
+        .stock-change .percentage.positive, .stock-total-pnl .percentage.positive {
             color: var(--success);
             background: rgba(22, 199, 132, 0.1);
         }
         
-        .stock-change .percentage.negative {
+        .stock-change .percentage.negative, .stock-total-pnl .percentage.negative {
             color: var(--danger);
             background: rgba(234, 57, 67, 0.1);
         }
@@ -1384,9 +1384,14 @@
                                             <span class="value" id="efn-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Per Share Change:</span>
-                                            <span class="value" id="efn-change">$0.00</span>
-                                            <span class="percentage" id="efn-percentage">0.00%</span>
+                                            <span class="label">Daily P&L:</span>
+                                            <span class="value" id="efn-daily-pnl">$0.00</span>
+                                            <span class="percentage" id="efn-daily-percentage">0.00%</span>
+                                        </div>
+                                        <div class="stock-total-pnl">
+                                            <span class="label">Total P&L:</span>
+                                            <span class="value" id="efn-total-pnl">$0.00</span>
+                                            <span class="percentage" id="efn-total-percentage">0.00%</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1406,9 +1411,14 @@
                                             <span class="value" id="wix-current-price">$0.00</span>
                                         </div>
                                         <div class="stock-change">
-                                            <span class="label">Per Share Change:</span>
-                                            <span class="value" id="wix-change">$0.00</span>
-                                            <span class="percentage" id="wix-percentage">0.00%</span>
+                                            <span class="label">Daily P&L:</span>
+                                            <span class="value" id="wix-daily-pnl">$0.00</span>
+                                            <span class="percentage" id="wix-daily-percentage">0.00%</span>
+                                        </div>
+                                        <div class="stock-total-pnl">
+                                            <span class="label">Total P&L:</span>
+                                            <span class="value" id="wix-total-pnl">$0.00</span>
+                                            <span class="percentage" id="wix-total-percentage">0.00%</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2312,19 +2322,34 @@
                     
                     // Update individual stock displays
                     const currentPriceEl = document.getElementById(`${stock.symbol.toLowerCase()}-current-price`);
-                    const changeEl = document.getElementById(`${stock.symbol.toLowerCase()}-change`);
-                    const percentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-percentage`);
+                    const dailyPnlEl = document.getElementById(`${stock.symbol.toLowerCase()}-daily-pnl`);
+                    const dailyPercentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-daily-percentage`);
+                    const totalPnlEl = document.getElementById(`${stock.symbol.toLowerCase()}-total-pnl`);
+                    const totalPercentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-total-percentage`);
                     
                     if (currentPriceEl) currentPriceEl.textContent = `$${effectivePrice.toFixed(2)}`;
-                    if (changeEl) {
-                        // Show per-share change, not total change
-                        const perShareChange = stock.dailyChange;
-                        changeEl.textContent = `${perShareChange >= 0 ? '+' : ''}$${perShareChange.toFixed(2)}`;
-                        changeEl.className = `value ${perShareChange >= 0 ? 'positive' : 'negative'}`;
+                    
+                    // Daily P&L (per share)
+                    if (dailyPnlEl) {
+                        const dailyPnl = stock.dailyChange;
+                        dailyPnlEl.textContent = `${dailyPnl >= 0 ? '+' : ''}$${dailyPnl.toFixed(2)}`;
+                        dailyPnlEl.className = `value ${dailyPnl >= 0 ? 'positive' : 'negative'}`;
                     }
-                    if (percentageEl) {
-                        percentageEl.textContent = `${stock.dailyChangePercent >= 0 ? '+' : ''}${stock.dailyChangePercent.toFixed(2)}%`;
-                        percentageEl.className = `percentage ${stock.dailyChangePercent >= 0 ? 'positive' : 'negative'}`;
+                    if (dailyPercentageEl) {
+                        dailyPercentageEl.textContent = `${stock.dailyChangePercent >= 0 ? '+' : ''}${stock.dailyChangePercent.toFixed(2)}%`;
+                        dailyPercentageEl.className = `percentage ${stock.dailyChangePercent >= 0 ? 'positive' : 'negative'}`;
+                    }
+                    
+                    // Total P&L (since base price)
+                    if (totalPnlEl) {
+                        const totalPnl = effectivePrice - stock.basePrice;
+                        totalPnlEl.textContent = `${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}`;
+                        totalPnlEl.className = `value ${totalPnl >= 0 ? 'positive' : 'negative'}`;
+                    }
+                    if (totalPercentageEl) {
+                        const totalPnlPercent = ((effectivePrice - stock.basePrice) / stock.basePrice) * 100;
+                        totalPercentageEl.textContent = `${totalPnlPercent >= 0 ? '+' : ''}${totalPnlPercent.toFixed(2)}%`;
+                        totalPercentageEl.className = `percentage ${totalPnlPercent >= 0 ? 'positive' : 'negative'}`;
                     }
                 });
                 
