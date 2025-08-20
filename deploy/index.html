@@ -621,6 +621,7 @@
             min-width: min-content;
             width: fit-content;
             padding: 16px 16px;
+            position: relative; /* Ensure sort indicators are positioned correctly */
         }
         
         .portfolio-table td {
@@ -635,6 +636,15 @@
             min-width: max-content;
         }
         
+        /* Ensure sort indicators are visible */
+        .portfolio-table th.sortable {
+            padding-right: 32px; /* Add extra padding for sort indicators */
+        }
+        
+        .portfolio-table th.sortable::after {
+            right: 12px; /* Adjust position to be more visible */
+        }
+        
         /* Mobile-optimized table styles */
         @media (max-width: 768px) {
             .portfolio-table {
@@ -647,8 +657,12 @@
                 font-size: 0.8rem;
             }
             
+            .portfolio-table th.sortable {
+                padding-right: 28px; /* Adjust padding for mobile */
+            }
+            
             .portfolio-table th.sortable::after {
-                right: 4px;
+                right: 8px;
                 font-size: 0.6rem;
             }
         }
