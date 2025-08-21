@@ -3162,6 +3162,7 @@
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
                         
                         let price = null;
+                        let apiUsed = stock?.api || 'finnhub';
                         
                         // Use appropriate API based on stock configuration
                         if (stock && stock.api === 'fmp') {
@@ -3170,6 +3171,18 @@
                         } else {
                             console.log(`🇺🇸 Using Finnhub API for ${symbol}`);
                             price = await this.fetchStockPrice(symbol);
+                            
+                            // If Finnhub fails for WIX, try FMP as fallback
+                            if (!price && symbol === 'WIX') {
+                                console.log(`🔄 Finnhub failed for WIX, trying FMP API as fallback`);
+                                try {
+                                    price = await this.fetchStockPriceFMP(symbol);
+                                    apiUsed = 'fmp-fallback';
+                                    console.log(`📊 FMP fallback result for WIX:`, price);
+                                } catch (fallbackError) {
+                                    console.log(`❌ FMP fallback also failed for WIX:`, fallbackError);
+                                }
+                            }
                         }
                         
                         console.log(`📊 Price result for ${symbol}:`, price);
@@ -3178,11 +3191,12 @@
                             hasCurrent: price && !!price.current,
                             currentValue: price?.current,
                             previousValue: price?.previous,
-                            priceType: typeof price?.current
+                            priceType: typeof price?.current,
+                            apiUsed: apiUsed
                         });
                         
                         if (price && price.current) {
-                            return { symbol, price, success: true };
+                            return { symbol, price, success: true, apiUsed };
                         } else {
                             return { symbol, price: null, success: false, error: 'No price data available' };
                         }
@@ -3194,57 +3208,54 @@
                 
                 const results = await Promise.allSettled(promises);
                 
-                // Check if ALL requests succeeded
-                const allSuccessful = results.every(result => 
-                    result.status === 'fulfilled' && result.value && result.value.success
-                );
-                
-                if (allSuccessful) {
-                    // All API calls succeeded, update prices and save to localStorage
-                    results.forEach((result) => {
-                        if (result.status === 'fulfilled' && result.value && result.value.success) {
-                            const { symbol, price } = result.value;
-                            const stock = this.rsuData.find(s => s.symbol === symbol);
-                            
-                            if (stock && price) {
-                                stock.currentPrice = price.current;
-                                // Calculate daily change from current and previous prices
-                                const dailyChange = price.current - price.previous;
-                                const dailyChangePercent = (dailyChange / price.previous) * 100;
-                                stock.dailyChange = dailyChange;
-                                stock.dailyChangePercent = dailyChangePercent;
-                                console.log(`✅ RSU ${symbol} (${stock.api}): $${price.current} (Change: $${dailyChange.toFixed(2)}, ${dailyChangePercent.toFixed(2)}%)`);
-                                successCount++;
-                            }
+                // Check individual results and update successful ones
+                results.forEach((result) => {
+                    if (result.status === 'fulfilled' && result.value && result.value.success) {
+                        const { symbol, price } = result.value;
+                        const stock = this.rsuData.find(s => s.symbol === symbol);
+                        
+                        if (stock && price) {
+                            stock.currentPrice = price.current;
+                            // Calculate daily change from current and previous prices
+                            const dailyChange = price.current - price.previous;
+                            const dailyChangePercent = (dailyChange / price.previous) * 100;
+                            stock.dailyChange = dailyChange;
+                            stock.dailyChangePercent = dailyChangePercent;
+                            const apiUsed = result.value.apiUsed || stock.api;
+                            console.log(`✅ RSU ${symbol} (${apiUsed}): $${price.current} (Change: $${dailyChange.toFixed(2)}, ${dailyChangePercent.toFixed(2)}%)`);
+                            successCount++;
                         }
-                    });
-                    
-                    // Save successful data to localStorage
-                    this.saveRSUPricesToLocalStorage();
-                    console.log(`📊 All ${successCount} RSU prices loaded successfully from API`);
-                } else {
-                    // Some or all API calls failed, use localStorage data if available
-                    if (hasLocalData) {
-                        console.log(`⚠️ RSU API requests failed, using cached data from localStorage`);
                     } else {
-                        // No localStorage data available, use default prices
-                        console.log(`❌ No API data and no localStorage data available for RSUs`);
-                        this.rsuData.forEach(stock => {
-                            stock.currentPrice = stock.defaultPrice || stock.basePrice;
-                            stock.dailyChange = 0;
-                            stock.dailyChangePercent = 0;
-                            console.log(`🔄 Using default price for RSU ${stock.symbol}: $${stock.currentPrice}`);
-                        });
+                        errorCount++;
+                        const symbol = result.status === 'fulfilled' ? result.value?.symbol : 'unknown';
+                        const error = result.status === 'fulfilled' ? result.value?.error : result.reason;
+                        console.log(`❌ Error for RSU ${symbol}:`, error);
+                        errors.push(`${symbol}: ${error}`);
                     }
-                    
-                    // Log individual errors
+                });
+                
+                // Save successful data to localStorage if we have any
+                if (successCount > 0) {
+                    this.saveRSUPricesToLocalStorage();
+                    console.log(`📊 ${successCount} RSU prices loaded successfully from API`);
+                }
+                
+                // If some failed but we have localStorage data, use it for failed ones
+                if (errorCount > 0 && hasLocalData) {
+                    console.log(`⚠️ ${errorCount} RSU API requests failed, using cached data for failed ones`);
+                } else if (errorCount > 0 && !hasLocalData) {
+                    // No localStorage data available, use default prices for failed ones
+                    console.log(`❌ No localStorage data available for failed RSUs, using default prices`);
                     results.forEach((result) => {
                         if (result.status === 'rejected' || (result.status === 'fulfilled' && result.value && !result.value.success)) {
-                            errorCount++;
-                            const symbol = result.status === 'fulfilled' ? result.value.symbol : 'unknown';
-                            const error = result.status === 'fulfilled' ? result.value.error : result.reason;
-                            console.log(`❌ Error for RSU ${symbol}:`, error);
-                            errors.push(`${symbol}: ${error}`);
+                            const symbol = result.status === 'fulfilled' ? result.value?.symbol : 'unknown';
+                            const stock = this.rsuData.find(s => s.symbol === symbol);
+                            if (stock) {
+                                stock.currentPrice = stock.defaultPrice || stock.basePrice;
+                                stock.dailyChange = 0;
+                                stock.dailyChangePercent = 0;
+                                console.log(`🔄 Using default price for RSU ${stock.symbol}: $${stock.currentPrice}`);
+                            }
                         }
                     });
                 }
