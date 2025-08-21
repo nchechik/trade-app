@@ -2206,6 +2206,9 @@
             }
             
             init() {
+                // Clear old localStorage data first
+                this.clearOldLocalStorageData();
+                
                 this.loadPortfolioData();
                 this.startAutoRefresh();
                 this.setupTableSorting();
@@ -2246,8 +2249,136 @@
                 }
             }
             
+            // Local Storage Methods for Stock Prices
+            saveStockPricesToLocalStorage() {
+                try {
+                    const stockData = {
+                        currentPrices: this.currentPrices,
+                        previousPrices: this.previousPrices,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('portfolioStockPrices', JSON.stringify(stockData));
+                    console.log('💾 Stock prices saved to localStorage');
+                } catch (error) {
+                    console.warn('Failed to save stock prices to localStorage:', error);
+                }
+            }
+            
+            loadStockPricesFromLocalStorage() {
+                try {
+                    const stored = localStorage.getItem('portfolioStockPrices');
+                    if (stored) {
+                        const stockData = JSON.parse(stored);
+                        // Check if data is less than 24 hours old
+                        const isDataFresh = (Date.now() - stockData.timestamp) < (24 * 60 * 60 * 1000);
+                        if (isDataFresh && stockData.currentPrices && stockData.previousPrices) {
+                            this.currentPrices = { ...stockData.currentPrices };
+                            this.previousPrices = { ...stockData.previousPrices };
+                            console.log('📱 Loaded stock prices from localStorage:', this.currentPrices);
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (error) {
+                    console.warn('Failed to load stock prices from localStorage:', error);
+                    return false;
+                }
+            }
+            
+            getLastUpdateTime() {
+                try {
+                    const stored = localStorage.getItem('portfolioStockPrices');
+                    if (stored) {
+                        const stockData = JSON.parse(stored);
+                        return stockData.timestamp || Date.now();
+                    }
+                    return Date.now();
+                } catch (error) {
+                    console.warn('Failed to get last update time:', error);
+                    return Date.now();
+                }
+            }
+            
+            // RSU Local Storage Methods
+            saveRSUPricesToLocalStorage() {
+                try {
+                    const rsuData = {
+                        stocks: this.rsuData.map(stock => ({
+                            symbol: stock.symbol,
+                            currentPrice: stock.currentPrice,
+                            dailyChange: stock.dailyChange,
+                            dailyChangePercent: stock.dailyChangePercent
+                        })),
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('portfolioRSUPrices', JSON.stringify(rsuData));
+                    console.log('💾 RSU prices saved to localStorage');
+                } catch (error) {
+                    console.warn('Failed to save RSU prices to localStorage:', error);
+                }
+            }
+            
+            loadRSUPricesFromLocalStorage() {
+                try {
+                    const stored = localStorage.getItem('portfolioRSUPrices');
+                    if (stored) {
+                        const rsuData = JSON.parse(stored);
+                        // Check if data is less than 24 hours old
+                        const isDataFresh = (Date.now() - rsuData.timestamp) < (24 * 60 * 60 * 1000);
+                        if (isDataFresh && rsuData.stocks) {
+                            rsuData.stocks.forEach(storedStock => {
+                                const stock = this.rsuData.find(s => s.symbol === storedStock.symbol);
+                                if (stock) {
+                                    stock.currentPrice = storedStock.currentPrice;
+                                    stock.dailyChange = storedStock.dailyChange;
+                                    stock.dailyChangePercent = storedStock.dailyChangePercent;
+                                }
+                            });
+                            console.log('📱 Loaded RSU prices from localStorage:', rsuData.stocks);
+                            return true;
+                        }
+                    }
+                    return false;
+                } catch (error) {
+                    console.warn('Failed to load RSU prices from localStorage:', error);
+                    return false;
+                }
+            }
+            
+            clearOldLocalStorageData() {
+                try {
+                    // Clear stock prices older than 24 hours
+                    const stockData = localStorage.getItem('portfolioStockPrices');
+                    if (stockData) {
+                        const parsed = JSON.parse(stockData);
+                        const isDataOld = (Date.now() - parsed.timestamp) >= (24 * 60 * 60 * 1000);
+                        if (isDataOld) {
+                            localStorage.removeItem('portfolioStockPrices');
+                            console.log('🗑️ Cleared old stock price data from localStorage');
+                        }
+                    }
+                    
+                    // Clear RSU prices older than 24 hours
+                    const rsuData = localStorage.getItem('portfolioRSUPrices');
+                    if (rsuData) {
+                        const parsed = JSON.parse(rsuData);
+                        const isDataOld = (Date.now() - parsed.timestamp) >= (24 * 60 * 60 * 1000);
+                        if (isDataOld) {
+                            localStorage.removeItem('portfolioRSUPrices');
+                            console.log('🗑️ Cleared old RSU price data from localStorage');
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to clear old localStorage data:', error);
+                }
+            }
+            
             async loadCurrentPrices() {
                 console.log('🚀 Starting to load current prices...');
+                
+                // Try to load from localStorage first
+                const hasLocalData = this.loadStockPricesFromLocalStorage();
+                
                 let successCount = 0;
                 let errorCount = 0;
                 const errors = [];
@@ -2265,38 +2396,53 @@
                     reason: r.reason
                 })));
                 
-                results.forEach((result, index) => {
-                    const stock = this.portfolioData[index];
-                    if (result.status === 'fulfilled' && result.value) {
+                // Check if ALL requests succeeded
+                const allSuccessful = results.every(result => result.status === 'fulfilled' && result.value);
+                
+                if (allSuccessful) {
+                    // All API calls succeeded, update prices and save to localStorage
+                    results.forEach((result, index) => {
+                        const stock = this.portfolioData[index];
                         this.currentPrices[stock.symbol] = result.value.current;
                         this.previousPrices[stock.symbol] = result.value.previous;
                         console.log(`✅ Loaded real price for ${stock.symbol}: $${result.value.current}`);
                         successCount++;
-                    } else {
-                        // Fallback to simulated data if API fails
-                        const simulatedPrice = this.generateSimulatedPrice(stock.avgCost);
-                        this.currentPrices[stock.symbol] = simulatedPrice;
-                        this.previousPrices[stock.symbol] = simulatedPrice * (0.98 + Math.random() * 0.04);
-                        console.log(`⚠️ Using simulated price for ${stock.symbol}: $${simulatedPrice}`);
-                        errorCount++;
-                        
-                        if (result.reason) {
-                            console.log(`❌ Error for ${stock.symbol}:`, result.reason);
-                            errors.push(`${stock.symbol}: ${result.reason.message}`);
-                        }
-                    }
-                });
-                
-                console.log(`📊 Final price data:`, this.currentPrices);
-                
-                // Show error message if there were API failures
-                if (errorCount > 0) {
-                    this.showErrorMessage(`Failed to load ${errorCount} stock prices. Using simulated data. Check console for details.`);
-                } else {
+                    });
+                    
+                    // Save successful data to localStorage
+                    this.saveStockPricesToLocalStorage();
                     this.hideErrorMessage();
+                    console.log(`📊 All ${successCount} stock prices loaded successfully from API`);
+                } else {
+                    // Some or all API calls failed, use localStorage data if available
+                    if (hasLocalData) {
+                        console.log(`⚠️ API requests failed, using cached data from localStorage`);
+                        this.showErrorMessage(`Failed to fetch current stock prices. Showing last known values from ${new Date(this.getLastUpdateTime()).toLocaleString()}.`);
+                    } else {
+                        // No localStorage data available, show NaN values
+                        console.log(`❌ No API data and no localStorage data available`);
+                        this.portfolioData.forEach(stock => {
+                            this.currentPrices[stock.symbol] = NaN;
+                            this.previousPrices[stock.symbol] = NaN;
+                        });
+                        this.showErrorMessage('Unable to fetch stock prices and no cached data available. All values will show as NaN.');
+                    }
+                    
+                    // Log individual errors
+                    results.forEach((result, index) => {
+                        const stock = this.portfolioData[index];
+                        if (result.status === 'rejected' || !result.value) {
+                            errorCount++;
+                            if (result.reason) {
+                                console.log(`❌ Error for ${stock.symbol}:`, result.reason);
+                                errors.push(`${stock.symbol}: ${result.reason.message}`);
+                            }
+                        }
+                    });
                 }
                 
-                console.log(`📊 Data Summary: ${successCount} real prices, ${errorCount} simulated prices`);
+                console.log(`📊 Final price data:`, this.currentPrices);
+                console.log(`📊 Data Summary: ${successCount} real prices, ${errorCount} failed requests`);
                 
                 // Load RSU prices
                 await this.loadRSUPrices();
@@ -2387,15 +2533,7 @@
                 }
             }
             
-            generateSimulatedPrice(avgCost) {
-                // Generate more realistic price variation around average cost
-                // Most stocks don't vary more than ±50% from their typical range
-                const variation = 0.8 + Math.random() * 0.4; // 80% to 120% of avg cost
-                const price = avgCost * variation;
-                
-                // Ensure price is reasonable (not too low or too high)
-                return Math.max(price, avgCost * 0.5);
-            }
+
             
             calculatePortfolioMetrics() {
                 this.totalPortfolioValue = 0;
@@ -2629,7 +2767,8 @@
                 tableContainer.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: var(--danger);">
                         <h3>⚠️ Error Loading Data</h3>
-                        <p>Failed to load portfolio data. Please try refreshing.</p>
+                        <p>Failed to load portfolio data. The system will attempt to use cached data if available.</p>
+                        <p>Please check your internet connection and try refreshing.</p>
                     </div>
                 `;
             }
@@ -2884,7 +3023,7 @@
                     console.log('✅ All data refreshed successfully');
                 } catch (error) {
                     console.error('Error refreshing all data:', error);
-                    this.showErrorMessage('Failed to refresh data');
+                    this.showErrorMessage('Failed to refresh data. Using cached values if available.');
                 } finally {
                     // Reset loading state
                     const refreshBtn = document.getElementById('refresh-all-button');
@@ -2979,7 +3118,7 @@
                     this.updateTotalWealthDisplay();
                 } catch (error) {
                     console.error('Error refreshing RSU prices:', error);
-                    this.showErrorMessage('Failed to refresh RSU prices');
+                    this.showErrorMessage('Failed to refresh RSU prices. Using cached data if available.');
                 }
             }
             
@@ -2987,7 +3126,15 @@
                 const symbols = this.rsuData.map(stock => stock.symbol);
                 console.log('🔄 Loading RSU prices for:', symbols);
                 
-                for (const symbol of symbols) {
+                // Try to load from localStorage first
+                const hasLocalData = this.loadRSUPricesFromLocalStorage();
+                
+                let successCount = 0;
+                let errorCount = 0;
+                const errors = [];
+                
+                // Create promises for all RSU price fetches
+                const promises = symbols.map(async (symbol) => {
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
@@ -3006,7 +3153,31 @@
                         console.log(`📊 Price result for ${symbol}:`, price);
                         
                         if (price && price.current) {
-                            if (stock) {
+                            return { symbol, price, success: true };
+                        } else {
+                            return { symbol, price: null, success: false, error: 'No price data available' };
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching price for RSU ${symbol}:`, error);
+                        return { symbol, price: null, success: false, error: error.message };
+                    }
+                });
+                
+                const results = await Promise.allSettled(promises);
+                
+                // Check if ALL requests succeeded
+                const allSuccessful = results.every(result => 
+                    result.status === 'fulfilled' && result.value && result.value.success
+                );
+                
+                if (allSuccessful) {
+                    // All API calls succeeded, update prices and save to localStorage
+                    results.forEach((result) => {
+                        if (result.status === 'fulfilled' && result.value && result.value.success) {
+                            const { symbol, price } = result.value;
+                            const stock = this.rsuData.find(s => s.symbol === symbol);
+                            
+                            if (stock && price) {
                                 stock.currentPrice = price.current;
                                 // Calculate daily change from current and previous prices
                                 const dailyChange = price.current - price.previous;
@@ -3014,31 +3185,42 @@
                                 stock.dailyChange = dailyChange;
                                 stock.dailyChangePercent = dailyChangePercent;
                                 console.log(`✅ RSU ${symbol} (${stock.api}): $${price.current} (Change: $${dailyChange.toFixed(2)}, ${dailyChangePercent.toFixed(2)}%)`);
-                            }
-                        } else {
-                            console.log(`⚠️ No price data for RSU ${symbol} - price:`, price);
-                            // Use default price if API returns no data
-                            const stock = this.rsuData.find(s => s.symbol === symbol);
-                            if (stock && stock.defaultPrice) {
-                                stock.currentPrice = stock.defaultPrice;
-                                stock.dailyChange = 0;
-                                stock.dailyChangePercent = 0;
-                                console.log(`🔄 Using default price for RSU ${symbol}: $${stock.defaultPrice}`);
+                                successCount++;
                             }
                         }
-                    } catch (error) {
-                        console.error(`Error fetching price for RSU ${symbol}:`, error);
-                        // Fallback to default price if API fails
-                        const stock = this.rsuData.find(s => s.symbol === symbol);
-                        if (stock) {
+                    });
+                    
+                    // Save successful data to localStorage
+                    this.saveRSUPricesToLocalStorage();
+                    console.log(`📊 All ${successCount} RSU prices loaded successfully from API`);
+                } else {
+                    // Some or all API calls failed, use localStorage data if available
+                    if (hasLocalData) {
+                        console.log(`⚠️ RSU API requests failed, using cached data from localStorage`);
+                    } else {
+                        // No localStorage data available, use default prices
+                        console.log(`❌ No API data and no localStorage data available for RSUs`);
+                        this.rsuData.forEach(stock => {
                             stock.currentPrice = stock.defaultPrice || stock.basePrice;
                             stock.dailyChange = 0;
                             stock.dailyChangePercent = 0;
-                            console.log(`🔄 Using default price for RSU ${symbol}: $${stock.currentPrice}`);
-                        }
+                            console.log(`🔄 Using default price for RSU ${stock.symbol}: $${stock.currentPrice}`);
+                        });
                     }
+                    
+                    // Log individual errors
+                    results.forEach((result) => {
+                        if (result.status === 'rejected' || (result.status === 'fulfilled' && result.value && !result.value.success)) {
+                            errorCount++;
+                            const symbol = result.status === 'fulfilled' ? result.value.symbol : 'unknown';
+                            const error = result.status === 'fulfilled' ? result.value.error : result.reason;
+                            console.log(`❌ Error for RSU ${symbol}:`, error);
+                            errors.push(`${symbol}: ${error}`);
+                        }
+                    });
                 }
-                console.log('📊 RSU price loading complete');
+                
+                console.log(`📊 RSU price loading complete: ${successCount} successful, ${errorCount} failed`);
             }
             
             updateRSUDisplay() {
