@@ -1622,15 +1622,7 @@
             transform: scale(0.95);
         }
         
-        .refresh-icon-btn svg {
-            width: 20px;
-            height: 20px;
-            transition: transform 0.3s ease;
-        }
-        
-        .refresh-icon-btn.loading svg {
-            animation: spin 1s linear infinite;
-        }
+
         
         /* Currency Toggle Styles */
         .currency-toggle-section {
@@ -1709,6 +1701,14 @@
 
         .header .refresh-icon-btn.loading svg {
             animation: spin 1s linear infinite;
+        }
+
+        /* Ensure no conflicting styles on SVG elements */
+        .header .refresh-icon-btn svg,
+        .header .refresh-icon-btn svg * {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         .header .currency-toggle-btn {
