@@ -1666,6 +1666,10 @@
         .header .refresh-icon-btn:hover {
             background: var(--card-hover);
             border-color: var(--primary);
+        }
+
+        /* Hover effect only when not loading */
+        .header .refresh-icon-btn:not(.loading):hover {
             transform: translateY(-1px);
         }
 
@@ -1677,7 +1681,8 @@
         }
 
         .header .refresh-icon-btn.loading svg {
-            animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite !important;
+            transform: none !important;
         }
 
         /* Ensure no conflicting styles on SVG elements */
