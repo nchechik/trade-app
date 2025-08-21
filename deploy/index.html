@@ -2321,10 +2321,21 @@
             loadRSUPricesFromLocalStorage() {
                 try {
                     const stored = localStorage.getItem('portfolioRSUPrices');
+                    console.log('🔍 Checking localStorage for RSU prices:', stored ? 'Data found' : 'No data');
+                    
                     if (stored) {
                         const rsuData = JSON.parse(stored);
+                        console.log('📱 Parsed RSU localStorage data:', rsuData);
+                        
                         // Check if data is less than 24 hours old
                         const isDataFresh = (Date.now() - rsuData.timestamp) < (24 * 60 * 60 * 1000);
+                        console.log('⏰ RSU data freshness check:', {
+                            currentTime: Date.now(),
+                            storedTime: rsuData.timestamp,
+                            ageHours: (Date.now() - rsuData.timestamp) / (1000 * 60 * 60),
+                            isFresh: isDataFresh
+                        });
+                        
                         if (isDataFresh && rsuData.stocks) {
                             rsuData.stocks.forEach(storedStock => {
                                 const stock = this.rsuData.find(s => s.symbol === storedStock.symbol);
@@ -2332,10 +2343,21 @@
                                     stock.currentPrice = storedStock.currentPrice;
                                     stock.dailyChange = storedStock.dailyChange;
                                     stock.dailyChangePercent = storedStock.dailyChangePercent;
+                                    console.log(`📱 Updated RSU ${stock.symbol} from localStorage:`, {
+                                        currentPrice: stock.currentPrice,
+                                        dailyChange: stock.dailyChange,
+                                        dailyChangePercent: stock.dailyChangePercent
+                                    });
                                 }
                             });
                             console.log('📱 Loaded RSU prices from localStorage:', rsuData.stocks);
                             return true;
+                        } else {
+                            console.log('⚠️ RSU localStorage data is stale or invalid:', {
+                                isFresh,
+                                hasStocks: !!rsuData.stocks,
+                                stocksCount: rsuData.stocks?.length
+                            });
                         }
                     }
                     return false;
@@ -3151,6 +3173,13 @@
                         }
                         
                         console.log(`📊 Price result for ${symbol}:`, price);
+                        console.log(`🔍 Price validation for ${symbol}:`, {
+                            hasPrice: !!price,
+                            hasCurrent: price && !!price.current,
+                            currentValue: price?.current,
+                            previousValue: price?.previous,
+                            priceType: typeof price?.current
+                        });
                         
                         if (price && price.current) {
                             return { symbol, price, success: true };
@@ -3227,7 +3256,17 @@
                 let totalRSUValue = 0;
                 let totalRSUDailyPnL = 0;
                 
+                console.log('🔄 Updating RSU display with data:', this.rsuData);
+                
                 this.rsuData.forEach(stock => {
+                    console.log(`📊 Processing RSU ${stock.symbol}:`, {
+                        currentPrice: stock.currentPrice,
+                        basePrice: stock.basePrice,
+                        defaultPrice: stock.defaultPrice,
+                        dailyChange: stock.dailyChange,
+                        shares: stock.shares
+                    });
+                    
                     // Use currentPrice if available, otherwise fall back to basePrice
                     const effectivePrice = stock.currentPrice > 0 ? stock.currentPrice : stock.basePrice;
                     const currentValue = stock.shares * effectivePrice;
@@ -3236,6 +3275,13 @@
                     
                     totalRSUValue += currentValue;
                     totalRSUDailyPnL += dailyPnL;
+                    
+                    console.log(`💰 RSU ${stock.symbol} calculations:`, {
+                        effectivePrice,
+                        currentValue,
+                        baseValue,
+                        dailyPnL
+                    });
                     
                     // Update individual stock displays
                     const currentPriceEl = document.getElementById(`${stock.symbol.toLowerCase()}-current-price`);
