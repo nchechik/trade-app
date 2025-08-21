@@ -1680,27 +1680,15 @@
             color: var(--text-primary);
         }
 
-        /* Remove any existing transforms that might interfere */
-        .header .refresh-icon-btn svg,
-        .header .refresh-icon-btn svg * {
-            transform: none !important;
-        }
-
-        /* Loading animation - target only the SVG */
-        .header .refresh-icon-btn.loading svg {
-            animation: spin 1s linear infinite !important;
-        }
-
         /* Ensure no conflicting styles on SVG elements */
         .header .refresh-icon-btn svg,
         .header .refresh-icon-btn svg * {
             border: none !important;
             outline: none !important;
             box-shadow: none !important;
-            transform: none !important;
         }
 
-        /* Debug: Add a distinctive color during loading to see what's rotating */
+        /* Loading animation - target only the SVG */
         .header .refresh-icon-btn.loading svg {
             animation: spin 1s linear infinite !important;
             background: rgba(255, 0, 0, 0.1) !important; /* Red tint to see the element */
