@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Favicon Generator</title>
+</head>
+<body>
+    <h1>Favicon Generator</h1>
+    <p>This will create a simple favicon using canvas and convert it to a data URI.</p>
+    
+    <canvas id="faviconCanvas" width="32" height="32" style="border: 1px solid #ccc;"></canvas>
+    
+    <div id="output"></div>
+    
+    <script>
+        const canvas = document.getElementById('faviconCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 32, 32);
+        
+        // Draw background circle
+        ctx.beginPath();
+        ctx.arc(16, 16, 15, 0, 2 * Math.PI);
+        ctx.fillStyle = '#667eea';
+        ctx.fill();
+        ctx.strokeStyle = '#4c63d2';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw chart line (upward trend)
+        ctx.beginPath();
+        ctx.moveTo(8, 24);
+        ctx.lineTo(12, 20);
+        ctx.lineTo(16, 16);
+        ctx.lineTo(20, 12);
+        ctx.lineTo(24, 8);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.stroke();
+        
+        // Draw data points
+        const points = [[8, 24], [12, 20], [16, 16], [20, 12], [24, 8]];
+        points.forEach(([x, y]) => {
+            ctx.beginPath();
+            ctx.arc(x, y, 1.5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+        });
+        
+        // Convert to data URI
+        const dataURI = canvas.toDataURL('image/png');
+        
+        // Display the data URI
+        document.getElementById('output').innerHTML = `
+            <h3>Generated Favicon:</h3>
+            <p><strong>Data URI:</strong></p>
+            <textarea rows="3" cols="80" readonly>${dataURI}</textarea>
+            <p><strong>HTML Link Tag:</strong></p>
+            <code>&lt;link rel="icon" type="image/png" href="${dataURI}"&gt;</code>
+        `;
+        
+        console.log('Favicon data URI:', dataURI);
+    </script>
+</body>
+</html>
