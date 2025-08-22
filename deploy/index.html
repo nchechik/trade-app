@@ -205,49 +205,84 @@
             padding: 0 4px;
         }
         
-        .profit-metrics-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .summary-card {
+        .summary-card.unified-summary {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 10px;
-            text-align: center;
+            padding: 24px;
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
             box-shadow: var(--shadow-sm);
         }
-        
-        .summary-card:hover {
+
+        .summary-card.unified-summary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+
+        .summary-card.unified-summary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--gradient-secondary) 50%, var(--success) 100%);
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .summary-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+            background: var(--dark-lighter);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .metric-item:hover {
+            background: var(--border);
             transform: translateY(-1px);
             box-shadow: var(--shadow-md);
-            border-color: var(--border);
-        }
-        
-        .summary-card.main-card {
-            align-self: center;
-            max-width: 400px;
-            width: 100%;
         }
 
-        .summary-value {
-            font-size: 2.25rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-            line-height: 1.2;
+        .metric-item.primary-metric {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--gradient-secondary) 100%);
+            color: var(--dark);
+            border-color: var(--primary);
         }
 
-        .summary-label {
+        .metric-item.primary-metric .metric-label,
+        .metric-item.primary-metric .metric-value,
+        .metric-item.primary-metric .metric-percentage {
+            color: var(--dark);
+        }
+
+        .metric-label {
             font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -255,37 +290,37 @@
             font-weight: 500;
         }
 
-        .summary-change {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 12px;
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
         }
 
-        .summary-change.positive {
+        .metric-value.positive {
             color: var(--success);
         }
 
-        .summary-change.negative {
+        .metric-value.negative {
             color: var(--danger);
         }
 
-        .summary-percentage {
+        .metric-percentage {
             font-size: 0.75rem;
-            font-weight: 600;
-            margin-top: 8px;
-            padding: 4px 12px;
-            border-radius: 20px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 8px;
+            background: var(--dark-lighter);
             display: inline-block;
+            align-self: flex-start;
         }
 
-        .summary-percentage.positive {
+        .metric-percentage.positive {
             color: var(--success);
-            background: rgba(22, 199, 132, 0.1);
         }
 
-        .summary-percentage.negative {
+        .metric-percentage.negative {
             color: var(--danger);
-            background: rgba(234, 57, 67, 0.1);
         }
         
         /* RSU Section Styles */
@@ -1300,14 +1335,30 @@
                 gap: 16px;
             }
             
-            .profit-metrics-row {
-                grid-template-columns: 1fr;
-                gap: 12px;
+            .summary-card.unified-summary {
+                padding: 20px;
             }
 
-            .summary-card {
-                padding: 20px;
+            .summary-header {
                 flex-direction: column;
+                text-align: center;
+                gap: 12px;
+                margin-bottom: 20px;
+                padding-bottom: 16px;
+            }
+            
+            .summary-metrics {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .metric-item {
+                padding: 20px;
+                text-align: center;
+            }
+            
+            .metric-item.primary-metric {
+                order: -1;
             }
             
             /* Modern Column Controls Mobile */
@@ -1349,18 +1400,6 @@
             .column-type {
                 font-size: 0.7rem;
                 padding: 3px 6px;
-            }
-            
-            .summary-icon {
-                font-size: 1.25rem;
-            }
-
-            .summary-value {
-                font-size: 2rem;
-            }
-            
-            .summary-content {
-                text-align: center;
             }
 
             .portfolio-section {
@@ -1498,13 +1537,29 @@
                 gap: 10px;
             }
             
-            .profit-metrics-row {
-                gap: 10px;
+            .summary-card.unified-summary {
+                padding: 16px;
             }
 
-            .summary-card {
-                padding: 10px;
-                gap: 10px;
+            .summary-header {
+                margin-bottom: 16px;
+                padding-bottom: 12px;
+            }
+            
+            .summary-metrics {
+                gap: 12px;
+            }
+
+            .metric-item {
+                padding: 16px;
+            }
+            
+            .metric-value {
+                font-size: 1.125rem;
+            }
+            
+            .summary-title {
+                font-size: 1.125rem;
             }
             
             .summary-icon svg {
@@ -1896,52 +1951,39 @@
             </div>
             
             <div class="card-content">
-                <!-- Portfolio Summary Cards -->
+                <!-- Unified Portfolio Summary Card -->
                 <div class="portfolio-summary">
-                    <!-- Total Portfolio Value - Centered at top -->
-                    <div class="summary-card total-value main-card">
-                        <div class="summary-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div class="summary-content">
-                            <div class="summary-value" id="total-value">$--</div>
-                            <div class="summary-label">Total Portfolio Value</div>
-                            <div class="summary-percentage" id="total-value-change">--</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Profit Metrics Row -->
-                    <div class="profit-metrics-row">
-                        <!-- Today's Profit - Left side -->
-                        <div class="summary-card daily-pnl">
+                    <!-- Unified Portfolio Summary Card -->
+                    <div class="summary-card unified-summary">
+                        <div class="summary-header">
                             <div class="summary-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </div>
-                            <div class="summary-content">
-                                <div class="summary-label">Today's Profit</div>
-                                <div class="summary-value" id="daily-pnl">$--</div>
-                                <div class="summary-percentage" id="daily-pnl-percentage">--</div>
-                            </div>
+                            <div class="summary-title">Portfolio Summary</div>
                         </div>
                         
-                        <!-- Total Profit - Right side -->
-                        <div class="summary-card total-pnl">
-                            <div class="summary-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
+                        <div class="summary-metrics">
+                            <!-- Total Portfolio Value -->
+                            <div class="metric-item primary-metric">
+                                <div class="metric-label">Total Portfolio Value</div>
+                                <div class="metric-value" id="total-value">$--</div>
+                                <div class="metric-percentage" id="total-value-change">--</div>
                             </div>
-                            <div class="summary-content">
-                                <div class="summary-label">Total Profit</div>
-                                <div class="summary-value" id="total-pnl">$--</div>
-                                <div class="summary-percentage" id="total-pnl-percentage">--</div>
+                            
+                            <!-- Today's Profit -->
+                            <div class="metric-item">
+                                <div class="metric-label">Today's Profit</div>
+                                <div class="metric-value" id="daily-pnl">$--</div>
+                                <div class="metric-percentage" id="daily-pnl-percentage">--</div>
+                            </div>
+                            
+                            <!-- Total Profit -->
+                            <div class="metric-item">
+                                <div class="metric-label">Total Profit</div>
+                                <div class="metric-value" id="total-pnl">$--</div>
+                                <div class="metric-percentage" id="total-pnl-percentage">--</div>
                             </div>
                         </div>
                     </div>
