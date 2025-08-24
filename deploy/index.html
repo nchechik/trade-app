@@ -2299,9 +2299,9 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN and WIX both use Finnhub)
+                // RSU Data (EFN uses Yahoo Finance with proxy, WIX uses Finnhub)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'finnhub', ticker: 'EFN.TO', isCanadian: true },
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'yahoo', ticker: 'EFN.TO', isCanadian: true },
                     { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'finnhub' }
                 ];
                 
@@ -2716,12 +2716,8 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                console.log(`Processing ${this.portfolioData.length} portfolio stocks...`);
-                
                 // Create promises for all price fetches
                 const promises = this.portfolioData.map(stock => this.fetchStockPrice(stock.symbol));
-                console.log(`Created ${promises.length} fetch promises`);
-                
                 const results = await Promise.allSettled(promises);
                 
                 // Check if ALL requests succeeded
@@ -2733,22 +2729,18 @@
                         const stock = this.portfolioData[index];
                         this.currentPrices[stock.symbol] = result.value.current;
                         this.previousPrices[stock.symbol] = result.value.previous;
-                        console.log(`✅ Loaded real price for ${stock.symbol}: $${result.value.current}`);
                         successCount++;
                     });
                     
                     // Save successful data to localStorage
                     this.saveStockPricesToLocalStorage();
                     this.hideErrorMessage();
-                    console.log(`📊 All ${successCount} stock prices loaded successfully from API`);
                 } else {
                     // Some or all API calls failed, use localStorage data if available
                     if (hasLocalData) {
-                        console.log(`⚠️ API requests failed, using cached data from localStorage`);
                         this.showErrorMessage(`Failed to fetch current stock prices. Showing last known values from ${new Date(this.getLastUpdateTime()).toLocaleString()}.`);
                     } else {
                         // No localStorage data available, use default prices as fallback
-                        console.log(`❌ No API data and no localStorage data available, using default prices`);
                         this.portfolioData.forEach(stock => {
                             // Use average cost as fallback price
                             this.currentPrices[stock.symbol] = stock.avgCost;
@@ -2763,15 +2755,11 @@
                         if (result.status === 'rejected' || !result.value) {
                             errorCount++;
                             if (result.reason) {
-                                console.log(`❌ Error for ${stock.symbol}:`, result.reason);
                                 errors.push(`${stock.symbol}: ${result.reason.message}`);
                             }
                         }
                     });
                 }
-                
-                console.log(`📊 Final price data:`, this.currentPrices);
-                console.log(`📊 Data Summary: ${successCount} real prices, ${errorCount} failed requests`);
                 
                 // Load RSU prices
                 await this.loadRSUPrices();
@@ -2779,54 +2767,41 @@
             
             async fetchStockPrice(symbol) {
                 try {
-                    console.log(`🔄 Fetching price for ${symbol}...`);
-                    
                     // Using Finnhub API with real API token
                     const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=d2igmbhr01qgfkrm8ss0d2igmbhr01qgfkrm8ssg`);
-                    
-                    console.log(`📡 Response status for ${symbol}:`, response.status, response.statusText);
                     
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
                     
                     const data = await response.json();
-                    console.log(`📊 Raw response for ${symbol}:`, data);
                     
-                        if (data && data.c && data.pc) {
-                            const currentPrice = parseFloat(data.c);
-                            const previousClose = parseFloat(data.pc);
+                    if (data && data.c && data.pc) {
+                        const currentPrice = parseFloat(data.c);
+                        const previousClose = parseFloat(data.pc);
+                        
+                        // Validate the price data
+                        if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
+                            // Check if this stock is marked as Canadian and convert CAD to USD
+                            const rsuStock = this.rsuData.find(rsu => rsu.symbol === symbol);
+                            let currentPriceUSD = currentPrice;
+                            let previousCloseUSD = previousClose;
                             
-                            // Validate the price data
-                            if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
-                                // Check if this stock is marked as Canadian and convert CAD to USD
-                                const rsuStock = this.rsuData.find(rsu => rsu.symbol === symbol);
-                                let currentPriceUSD = currentPrice;
-                                let previousCloseUSD = previousClose;
-                                
-                                if (rsuStock && rsuStock.isCanadian) {
-                                    // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
-                                    const cadToUsdRate = 0.74;
-                                    currentPriceUSD = currentPrice * cadToUsdRate;
-                                    previousCloseUSD = previousClose * cadToUsdRate;
-                                    console.log(`✅ ${symbol}: CAD $${currentPrice} → USD $${currentPriceUSD.toFixed(2)} (Previous: CAD $${previousClose} → USD $${previousCloseUSD.toFixed(2)})`);
-                                } else {
-                                    console.log(`✅ ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
-                                }
-                                
-                                return {
-                                    current: currentPriceUSD,
-                                    previous: previousCloseUSD
-                                };
-                            } else {
-                                console.log(`❌ ${symbol}: Invalid price data - Current: ${data.c}, Previous: ${data.pc}`);
+                            if (rsuStock && rsuStock.isCanadian) {
+                                // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
+                                const cadToUsdRate = 0.74;
+                                currentPriceUSD = currentPrice * cadToUsdRate;
+                                previousCloseUSD = previousClose * cadToUsdRate;
                             }
-                        } else {
-                            console.log(`❌ ${symbol}: No quote data available - data:`, data);
+                            
+                            return {
+                                current: currentPriceUSD,
+                                previous: previousCloseUSD
+                            };
                         }
-                        return null;
+                    }
+                    return null;
                 } catch (error) {
-                    console.log(`❌ Failed to fetch price for ${symbol}:`, error);
                     throw error; // Re-throw to handle in calling function
                 }
             }
@@ -3575,7 +3550,6 @@
             
             async loadRSUPrices() {
                 const symbols = this.rsuData.map(stock => stock.symbol);
-                console.log('Loading RSU prices for:', symbols);
                 
                 // Try to load from localStorage first
                 const hasLocalData = this.loadRSUPricesFromLocalStorage();
@@ -3592,11 +3566,33 @@
                         let price = null;
                         let apiUsed = stock?.api || 'finnhub';
                         
+                        // Special debugging for EFN stock
+                        if (symbol === 'EFN') {
+                            console.log('=== EFN DEBUG START ===');
+                            console.log('EFN stock config:', stock);
+                            console.log('EFN API type:', stock?.api);
+                            console.log('EFN ticker:', stock?.ticker);
+                        }
+                        
                         // Use appropriate API based on stock configuration
                         if (stock && stock.api === 'yahoo') {
+                            if (symbol === 'EFN') console.log('EFN: Calling Yahoo Finance API...');
                             price = await this.fetchStockPriceYahoo(symbol, stock.ticker);
+                            if (symbol === 'EFN') console.log('EFN: Yahoo Finance result:', price);
                         } else {
+                            if (symbol === 'EFN') console.log('EFN: Calling Finnhub API...');
                             price = await this.fetchStockPrice(symbol);
+                            if (symbol === 'EFN') console.log('EFN: Finnhub result:', price);
+                        }
+                        
+                        if (symbol === 'EFN') {
+                            console.log('EFN: Final price validation:', {
+                                hasPrice: !!price,
+                                hasCurrent: price && !!price.current,
+                                currentValue: price?.current,
+                                previousValue: price?.previous
+                            });
+                            console.log('=== EFN DEBUG END ===');
                         }
                         
                         if (price && price.current) {
@@ -3605,6 +3601,11 @@
                             return { symbol, price: null, success: false, error: 'No price data available' };
                         }
                     } catch (error) {
+                        if (symbol === 'EFN') {
+                            console.log('EFN: Error occurred:', error);
+                            console.log('EFN: Error message:', error.message);
+                            console.log('EFN: Error stack:', error.stack);
+                        }
                         console.error(`Error fetching price for RSU ${symbol}:`, error);
                         throw error;
                     }
