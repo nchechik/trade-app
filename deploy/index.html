@@ -2299,7 +2299,7 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN uses FMP API for EFN, converted from CAD to USD)
+                // RSU Data (EFN uses FMP API for EFN, converted from CAD to USD) - VERSION: 2024-01-22
                 this.rsuData = [
                     { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'fmp', ticker: 'EFN', isCanadian: true },
                     { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'fmp' }
@@ -3572,6 +3572,7 @@
                 console.log('🔄 Loading RSU prices for:', symbols);
                 console.log('🔍 RSU data configuration:', this.rsuData.map(s => ({ symbol: s.symbol, api: s.api, ticker: s.ticker })));
                 console.log('🚨 DEBUG: Starting RSU price loading process...');
+                console.log('🚨 DEBUG: Full RSU data object:', JSON.stringify(this.rsuData, null, 2));
                 
                 // Try to load from localStorage first
                 const hasLocalData = this.loadRSUPricesFromLocalStorage();
