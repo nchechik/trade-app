@@ -2174,7 +2174,7 @@
                         <div class="stock-details">
                             <div class="stock-price">
                                 <span class="label">Base Price:</span>
-                                <span class="value">$21.00 USD</span>
+                                <span class="value" id="efn-base-price">$21.00 USD</span>
                             </div>
                             <div class="stock-current">
                                 <span class="label">Current:</span>
@@ -2203,7 +2203,7 @@
                         <div class="stock-details">
                             <div class="stock-price">
                                 <span class="label">Base Price:</span>
-                                <span class="value">$78.27 USD</span>
+                                <span class="value" id="wix-base-price">$78.27 USD</span>
                             </div>
                             <div class="stock-current">
                                 <span class="label">Current:</span>
@@ -3738,6 +3738,19 @@
                                 priceIndicatorEl.textContent = 'DEFAULT';
                                 priceIndicatorEl.className = 'price-indicator default';
                             }
+                        }
+                    }
+                    
+                    // Update base price display based on selected currency
+                    const basePriceEl = document.getElementById(`${stock.symbol.toLowerCase()}-base-price`);
+                    if (basePriceEl) {
+                        if (this.currentCurrency === 'ILS') {
+                            // Convert USD base price to ILS
+                            const basePriceILS = stock.basePrice * this.exchangeRate;
+                            basePriceEl.textContent = `₪${this.formatCurrencyValue(basePriceILS)} ILS`;
+                        } else {
+                            // Show in USD
+                            basePriceEl.textContent = `$${this.formatCurrencyValue(stock.basePrice)} USD`;
                         }
                     }
                     
