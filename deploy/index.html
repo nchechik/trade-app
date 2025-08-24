@@ -2299,9 +2299,9 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN uses FMP API for EFN.TO, converted from CAD to USD)
+                // RSU Data (EFN uses FMP API for EFN, converted from CAD to USD)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'fmp', ticker: 'EFN.TO' },
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'fmp', ticker: 'EFN', isCanadian: true },
                     { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'fmp' }
                 ];
                 
@@ -2877,11 +2877,13 @@
                             
                             // Validate the price data
                             if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
-                                // Check if this is a Canadian stock (like EFN.TO) and convert CAD to USD
+                                // Check if this is a Canadian stock and convert CAD to USD
                                 let currentPriceUSD = currentPrice;
                                 let previousCloseUSD = previousClose;
                                 
-                                if (symbol.includes('.TO')) {
+                                // Check if this stock is marked as Canadian in RSU data
+                                const rsuStock = this.rsuData.find(rsu => rsu.symbol === symbol);
+                                if (rsuStock && rsuStock.isCanadian) {
                                     // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
                                     const cadToUsdRate = 0.74;
                                     currentPriceUSD = currentPrice * cadToUsdRate;
@@ -2894,8 +2896,8 @@
                                 return {
                                     current: currentPriceUSD,
                                     previous: previousCloseUSD,
-                                    currentCAD: symbol.includes('.TO') ? currentPrice : currentPriceUSD,
-                                    previousCAD: symbol.includes('.TO') ? previousClose : previousCloseUSD
+                                    currentCAD: (rsuStock && rsuStock.isCanadian) ? currentPrice : currentPriceUSD,
+                                    previousCAD: (rsuStock && rsuStock.isCanadian) ? previousClose : previousCloseUSD
                                 };
                             } else {
                                 console.log(`❌ FMP ${symbol}: Invalid price data - Current: ${stockData.price}, Previous: ${stockData.previousClose}`);
