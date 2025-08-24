@@ -2718,8 +2718,14 @@
                 
                 console.log(`📋 Portfolio data to process:`, this.portfolioData.map(s => s.symbol));
                 
-                // Simple approach: just fetch all prices normally
-                const promises = this.portfolioData.map(stock => this.fetchStockPriceWithFallback(stock.symbol));
+                // Create promises with rate limiting to avoid API limits
+                const promises = this.portfolioData.map(async (stock, index) => {
+                    // Add delay between requests to avoid rate limiting
+                    if (index > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+                    }
+                    return await this.fetchStockPriceWithFallback(stock.symbol);
+                });
                 console.log(`🔄 Created ${promises.length} fetch promises`);
                 
                 const results = await Promise.allSettled(promises);
@@ -3581,8 +3587,12 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                // Create promises for all RSU price fetches
-                const promises = symbols.map(async (symbol) => {
+                // Create promises for all RSU price fetches with rate limiting
+                const promises = symbols.map(async (symbol, index) => {
+                    // Add delay between requests to avoid rate limiting
+                    if (index > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
+                    }
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
