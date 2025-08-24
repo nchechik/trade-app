@@ -3718,7 +3718,14 @@
                     const totalPercentageEl = document.getElementById(`${stock.symbol.toLowerCase()}-total-percentage`);
                     
                     if (currentPriceEl) {
-                        currentPriceEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(effectivePrice)}`;
+                        // For Canadian stocks, show both USD and CAD prices
+                        if (stock.isCanadian && stock.currentPrice && stock.currentPrice !== stock.defaultPrice && stock.currentPrice !== stock.basePrice) {
+                            // Calculate CAD price from USD price (reverse the conversion)
+                            const cadPrice = effectivePrice / 0.74; // Convert USD back to CAD
+                            currentPriceEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(effectivePrice)} (CAD $${cadPrice.toFixed(2)})`;
+                        } else {
+                            currentPriceEl.textContent = `${this.currencySymbol}${this.formatCurrencyValue(effectivePrice)}`;
+                        }
                         
                         // Set price indicator based on whether it's default or live price
                         const priceIndicatorEl = document.getElementById(`${stock.symbol.toLowerCase()}-price-indicator`);
