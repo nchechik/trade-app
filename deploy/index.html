@@ -2299,9 +2299,9 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN uses Yahoo Finance, WIX uses Finnhub)
+                // RSU Data (EFN and WIX both use Finnhub)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'yahoo', ticker: 'EFN.TO', isCanadian: true },
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'finnhub', ticker: 'EFN.TO', isCanadian: true },
                     { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'finnhub' }
                 ];
                 
@@ -2793,24 +2793,38 @@
                     const data = await response.json();
                     console.log(`📊 Raw response for ${symbol}:`, data);
                     
-                    if (data && data.c && data.pc) {
-                        const currentPrice = parseFloat(data.c);
-                        const previousClose = parseFloat(data.pc);
-                        
-                        // Validate the price data
-                        if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
-                            console.log(`✅ ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
-                            return {
-                                current: currentPrice,
-                                previous: previousClose
-                            };
+                        if (data && data.c && data.pc) {
+                            const currentPrice = parseFloat(data.c);
+                            const previousClose = parseFloat(data.pc);
+                            
+                            // Validate the price data
+                            if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
+                                // Check if this stock is marked as Canadian and convert CAD to USD
+                                const rsuStock = this.rsuData.find(rsu => rsu.symbol === symbol);
+                                let currentPriceUSD = currentPrice;
+                                let previousCloseUSD = previousClose;
+                                
+                                if (rsuStock && rsuStock.isCanadian) {
+                                    // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
+                                    const cadToUsdRate = 0.74;
+                                    currentPriceUSD = currentPrice * cadToUsdRate;
+                                    previousCloseUSD = previousClose * cadToUsdRate;
+                                    console.log(`✅ ${symbol}: CAD $${currentPrice} → USD $${currentPriceUSD.toFixed(2)} (Previous: CAD $${previousClose} → USD $${previousCloseUSD.toFixed(2)})`);
+                                } else {
+                                    console.log(`✅ ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
+                                }
+                                
+                                return {
+                                    current: currentPriceUSD,
+                                    previous: previousCloseUSD
+                                };
+                            } else {
+                                console.log(`❌ ${symbol}: Invalid price data - Current: ${data.c}, Previous: ${data.pc}`);
+                            }
                         } else {
-                            console.log(`❌ ${symbol}: Invalid price data - Current: ${data.c}, Previous: ${data.pc}`);
+                            console.log(`❌ ${symbol}: No quote data available - data:`, data);
                         }
-                    } else {
-                        console.log(`❌ ${symbol}: No quote data available - data:`, data);
-                    }
-                    return null;
+                        return null;
                 } catch (error) {
                     console.log(`❌ Failed to fetch price for ${symbol}:`, error);
                     throw error; // Re-throw to handle in calling function
