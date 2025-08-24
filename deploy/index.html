@@ -2299,10 +2299,10 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN uses FMP API for EFN.TO, converted from CAD to USD)
+                // RSU Data (EFN uses Alpha Vantage API for EFN.TO, converted from CAD to USD)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'fmp', ticker: 'EFN.TO' },
-                    { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'fmp' }
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'alphavantage', ticker: 'EFN.TO' },
+                    { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'alphavantage' }
                 ];
                 
                 this.currentPrices = {};
@@ -2718,23 +2718,9 @@
                 
                 console.log(`📋 Portfolio data to process:`, this.portfolioData.map(s => s.symbol));
                 
-                // Simple fix: Add small delays between requests to avoid rate limiting
-                const promises = this.portfolioData.map((stock, index) => {
-                    return new Promise(async (resolve) => {
-                        // Add 100ms delay between each request
-                        if (index > 0) {
-                            await new Promise(delayResolve => setTimeout(delayResolve, 100));
-                        }
-                        try {
-                            const result = await this.fetchStockPriceWithFallback(stock.symbol);
-                            resolve(result);
-                        } catch (error) {
-                            resolve({ error: error.message });
-                        }
-                    });
-                });
-                
-                console.log(`🔄 Created ${promises.length} fetch promises with delays`);
+                // Simple approach: just fetch all prices normally
+                const promises = this.portfolioData.map(stock => this.fetchStockPriceWithFallback(stock.symbol));
+                console.log(`🔄 Created ${promises.length} fetch promises`);
                 
                 const results = await Promise.allSettled(promises);
                 console.log(`📊 All promises settled:`, results.map((r, i) => ({
@@ -2923,6 +2909,59 @@
                     return null;
                 } catch (error) {
                     console.log(`❌ Failed to fetch FMP price for ${symbol}:`, error);
+                    throw error; // Re-throw to handle in calling function
+                }
+            }
+            
+            async fetchStockPriceAlphaVantage(symbol) {
+                try {
+                    console.log(`🔄 Fetching Alpha Vantage price for ${symbol}...`);
+                    
+                    // Using Alpha Vantage API (free tier, 5 requests per minute)
+                    const response = await fetch(`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=demo`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`📊 Alpha Vantage raw response for ${symbol}:`, data);
+                    
+                    if (data && data['Global Quote'] && data['Global Quote']['05. price'] && data['Global Quote']['08. previous close']) {
+                        const currentPrice = parseFloat(data['Global Quote']['05. price']);
+                        const previousClose = parseFloat(data['Global Quote']['08. previous close']);
+                        
+                        // Validate the price data
+                        if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
+                            // Check if this is a Canadian stock (like EFN.TO) and convert CAD to USD
+                            let currentPriceUSD = currentPrice;
+                            let previousCloseUSD = previousClose;
+                            
+                            if (symbol.includes('.TO')) {
+                                // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
+                                const cadToUsdRate = 0.74;
+                                currentPriceUSD = currentPrice * cadToUsdRate;
+                                previousCloseUSD = previousClose * cadToUsdRate;
+                                console.log(`✅ Alpha Vantage ${symbol}: CAD $${currentPrice} → USD $${currentPriceUSD.toFixed(2)} (Previous: CAD $${previousClose} → USD $${previousCloseUSD.toFixed(2)})`);
+                            } else {
+                                console.log(`✅ Alpha Vantage ${symbol}: $${currentPrice} (Previous: $${previousClose})`);
+                            }
+                            
+                            return {
+                                current: currentPriceUSD,
+                                previous: previousCloseUSD,
+                                currentCAD: symbol.includes('.TO') ? currentPrice : currentPriceUSD,
+                                previousCAD: symbol.includes('.TO') ? previousClose : previousCloseUSD
+                            };
+                        } else {
+                            console.log(`❌ Alpha Vantage ${symbol}: Invalid price data - Current: ${currentPrice}, Previous: ${previousClose}`);
+                        }
+                    } else {
+                        console.log(`❌ Alpha Vantage ${symbol}: Missing price fields in response`);
+                    }
+                    return null;
+                } catch (error) {
+                    console.log(`❌ Failed to fetch Alpha Vantage price for ${symbol}:`, error);
                     throw error; // Re-throw to handle in calling function
                 }
             }
@@ -3590,12 +3629,8 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                // Create promises for all RSU price fetches with delays to avoid rate limiting
-                const promises = symbols.map(async (symbol, index) => {
-                    // Add 200ms delay between RSU requests
-                    if (index > 0) {
-                        await new Promise(delayResolve => setTimeout(delayResolve, 200));
-                    }
+                // Create promises for all RSU price fetches
+                const promises = symbols.map(async (symbol) => {
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
@@ -3617,6 +3652,9 @@
                         } else if (stock && stock.api === 'fmp') {
                             console.log(`🌍 Using FMP API for ${symbol}`);
                             price = await this.fetchStockPriceFMP(symbol);
+                        } else if (stock && stock.api === 'alphavantage') {
+                            console.log(`🌍 Using Alpha Vantage API for ${symbol}`);
+                            price = await this.fetchStockPriceAlphaVantage(symbol);
                         } else {
                             console.log(`🇺🇸 Using Finnhub API for ${symbol}`);
                             price = await this.fetchStockPrice(symbol);
