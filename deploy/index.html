@@ -2902,52 +2902,68 @@
                 try {
                     console.log(`Fetching Yahoo Finance price for ${symbol} (${ticker})...`);
                     
-                    // Using Yahoo Finance API with CORS proxy
-                    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                    // Try multiple CORS proxies for Yahoo Finance API
+                    const proxies = [
+                        'https://api.allorigins.win/raw?url=',
+                        'https://corsproxy.io/?',
+                        'https://thingproxy.freeboard.io/fetch/'
+                    ];
+                    
                     const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`;
-                    const response = await fetch(proxyUrl + yahooUrl);
+                    let lastError = null;
                     
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data && data.chart && data.chart.result && data.chart.result[0]) {
-                        const result = data.chart.result[0];
-                        const meta = result.meta;
-                        const indicators = result.indicators?.quote?.[0];
-                        
-                        if (meta && indicators) {
-                            const currentPrice = parseFloat(meta.regularMarketPrice);
-                            const previousClose = parseFloat(meta.previousClose);
+                    for (const proxy of proxies) {
+                        try {
+                            console.log(`Trying proxy: ${proxy}`);
+                            const response = await fetch(proxy + yahooUrl);
                             
-                            // Validate the price data
-                            if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
-                                // Check if this is a Canadian stock (like EFN.TO) and convert CAD to USD
-                                let currentPriceUSD = currentPrice;
-                                let previousCloseUSD = previousClose;
+                            if (response.ok) {
+                                const data = await response.json();
                                 
-                                if (ticker.includes('.TO')) {
-                                    // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
-                                    const cadToUsdRate = 0.74;
-                                    currentPriceUSD = currentPrice * cadToUsdRate;
-                                    previousCloseUSD = previousClose * cadToUsdRate;
-                                    console.log(`Yahoo Finance ${symbol} (${ticker}): CAD $${currentPrice} → USD $${currentPriceUSD.toFixed(2)} (Previous: CAD $${previousClose} → USD $${previousCloseUSD.toFixed(2)})`);
-                                } else {
-                                    console.log(`Yahoo Finance ${symbol} (${ticker}): $${currentPrice} (Previous: $${previousClose})`);
+                                if (data && data.chart && data.chart.result && data.chart.result[0]) {
+                                    const result = data.chart.result[0];
+                                    const meta = result.meta;
+                                    const indicators = result.indicators?.quote?.[0];
+                                    
+                                    if (meta && indicators) {
+                                        const currentPrice = parseFloat(meta.regularMarketPrice);
+                                        const previousClose = parseFloat(meta.previousClose);
+                                        
+                                        // Validate the price data
+                                        if (currentPrice > 0 && !isNaN(currentPrice) && previousClose > 0 && !isNaN(previousClose)) {
+                                            // Check if this is a Canadian stock (like EFN.TO) and convert CAD to USD
+                                            let currentPriceUSD = currentPrice;
+                                            let previousCloseUSD = previousClose;
+                                            
+                                            if (ticker.includes('.TO')) {
+                                                // Convert CAD to USD (approximate exchange rate: 1 CAD = 0.74 USD)
+                                                const cadToUsdRate = 0.74;
+                                                currentPriceUSD = currentPrice * cadToUsdRate;
+                                                previousCloseUSD = previousClose * cadToUsdRate;
+                                                console.log(`Yahoo Finance ${symbol} (${ticker}): CAD $${currentPrice} → USD $${currentPriceUSD.toFixed(2)} (Previous: CAD $${previousClose} → USD $${previousCloseUSD.toFixed(2)})`);
+                                            } else {
+                                                console.log(`Yahoo Finance ${symbol} (${ticker}): $${currentPrice} (Previous: $${previousClose})`);
+                                            }
+                                            
+                                            return {
+                                                current: currentPriceUSD,
+                                                previous: previousCloseUSD,
+                                                currentCAD: ticker.includes('.TO') ? currentPrice : currentPriceUSD,
+                                                previousCAD: ticker.includes('.TO') ? previousClose : previousCloseUSD
+                                            };
+                                        }
+                                    }
                                 }
-                                
-                                return {
-                                    current: currentPriceUSD,
-                                    previous: previousCloseUSD,
-                                    currentCAD: ticker.includes('.TO') ? currentPrice : currentPriceUSD,
-                                    previousCAD: ticker.includes('.TO') ? previousClose : previousCloseUSD
-                                };
                             }
+                        } catch (proxyError) {
+                            console.log(`Proxy ${proxy} failed:`, proxyError.message);
+                            lastError = proxyError;
+                            continue; // Try next proxy
                         }
                     }
-                    return null;
+                    
+                    // All proxies failed
+                    throw new Error(`All CORS proxies failed. Last error: ${lastError?.message}`);
                 } catch (error) {
                     console.log(`Failed to fetch Yahoo Finance price for ${symbol}:`, error);
                     throw error;
