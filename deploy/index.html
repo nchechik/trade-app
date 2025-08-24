@@ -2718,8 +2718,23 @@
                 
                 console.log(`📋 Portfolio data to process:`, this.portfolioData.map(s => s.symbol));
                 
-                const promises = this.portfolioData.map(stock => this.fetchStockPriceWithFallback(stock.symbol));
-                console.log(`🔄 Created ${promises.length} fetch promises`);
+                // Simple fix: Add small delays between requests to avoid rate limiting
+                const promises = this.portfolioData.map((stock, index) => {
+                    return new Promise(async (resolve) => {
+                        // Add 100ms delay between each request
+                        if (index > 0) {
+                            await new Promise(delayResolve => setTimeout(delayResolve, 100));
+                        }
+                        try {
+                            const result = await this.fetchStockPriceWithFallback(stock.symbol);
+                            resolve(result);
+                        } catch (error) {
+                            resolve({ error: error.message });
+                        }
+                    });
+                });
+                
+                console.log(`🔄 Created ${promises.length} fetch promises with delays`);
                 
                 const results = await Promise.allSettled(promises);
                 console.log(`📊 All promises settled:`, results.map((r, i) => ({
@@ -3575,8 +3590,12 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                // Create promises for all RSU price fetches
-                const promises = symbols.map(async (symbol) => {
+                // Create promises for all RSU price fetches with delays to avoid rate limiting
+                const promises = symbols.map(async (symbol, index) => {
+                    // Add 200ms delay between RSU requests
+                    if (index > 0) {
+                        await new Promise(delayResolve => setTimeout(delayResolve, 200));
+                    }
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
