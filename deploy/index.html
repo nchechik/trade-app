@@ -2299,10 +2299,10 @@
                     { symbol: 'NVDA', shares: 24, avgCost: 120.0771 }
                 ];
                 
-                // RSU Data (EFN uses FMP API for EFN, converted from CAD to USD) - VERSION: 2024-01-22
+                // RSU Data (EFN uses Yahoo Finance, WIX uses Finnhub)
                 this.rsuData = [
-                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'fmp', ticker: 'EFN', isCanadian: true },
-                    { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'fmp' }
+                    { symbol: 'EFN', shares: 2537, basePrice: 21.00, defaultPrice: 26.58, currentPrice: 26.58, dailyChange: 0, dailyChangePercent: 0, api: 'yahoo', ticker: 'EFN.TO', isCanadian: true },
+                    { symbol: 'WIX', shares: 187, basePrice: 78.27, defaultPrice: 78.27, currentPrice: 78.27, dailyChange: 0, dailyChangePercent: 0, api: 'finnhub' }
                 ];
                 
                 this.currentPrices = {};
@@ -2716,35 +2716,26 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                console.log(`📋 Portfolio data to process:`, this.portfolioData.map(s => s.symbol));
+                console.log(`Processing ${this.portfolioData.length} portfolio stocks...`);
                 
                 // Process stocks sequentially with rate limiting to avoid API limits
                 const results = [];
                 for (let i = 0; i < this.portfolioData.length; i++) {
                     const stock = this.portfolioData[i];
-                    console.log(`🔄 Processing stock ${i + 1}/${this.portfolioData.length}: ${stock.symbol}`);
                     
                     try {
-                        const price = await this.fetchStockPriceWithFallback(stock.symbol);
+                        const price = await this.fetchStockPrice(stock.symbol); // Use Finnhub directly
                         results.push({ status: 'fulfilled', value: { symbol: stock.symbol, price, success: !!price } });
-                        console.log(`✅ Successfully processed ${stock.symbol}`);
                     } catch (error) {
-                        console.error(`❌ Error processing ${stock.symbol}:`, error);
+                        console.error(`Error processing ${stock.symbol}:`, error);
                         results.push({ status: 'rejected', reason: error });
                     }
                     
                     // Add delay between requests (except for the last one)
                     if (i < this.portfolioData.length - 1) {
-                        console.log(`⏳ Waiting 300ms before next request...`);
-                        await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
                     }
                 }
-                console.log(`📊 All promises settled:`, results.map((r, i) => ({
-                    symbol: this.portfolioData[i].symbol,
-                    status: r.status,
-                    value: r.value,
-                    reason: r.reason
-                })));
                 
                 // Check if ALL requests succeeded
                 const allSuccessful = results.every(result => result.status === 'fulfilled' && result.value);
@@ -2796,9 +2787,7 @@
                 console.log(`📊 Data Summary: ${successCount} real prices, ${errorCount} failed requests`);
                 
                 // Load RSU prices
-                console.log('🚨 DEBUG: About to load RSU prices...');
                 await this.loadRSUPrices();
-                console.log('🚨 DEBUG: RSU prices loaded, about to update RSU display...');
             }
             
             async fetchStockPrice(symbol) {
@@ -3585,10 +3574,7 @@
             
             async loadRSUPrices() {
                 const symbols = this.rsuData.map(stock => stock.symbol);
-                console.log('🔄 Loading RSU prices for:', symbols);
-                console.log('🔍 RSU data configuration:', this.rsuData.map(s => ({ symbol: s.symbol, api: s.api, ticker: s.ticker })));
-                console.log('🚨 DEBUG: Starting RSU price loading process...');
-                console.log('🚨 DEBUG: Full RSU data object:', JSON.stringify(this.rsuData, null, 2));
+                console.log('Loading RSU prices for:', symbols);
                 
                 // Try to load from localStorage first
                 const hasLocalData = this.loadRSUPricesFromLocalStorage();
@@ -3601,73 +3587,33 @@
                 const results = [];
                 for (let i = 0; i < symbols.length; i++) {
                     const symbol = symbols[i];
-                    console.log(`🔄 Processing RSU ${i + 1}/${symbols.length}: ${symbol}`);
                     
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
-                        console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
                         
                         let price = null;
                         let apiUsed = stock?.api || 'finnhub';
                         
                         // Use appropriate API based on stock configuration
                         if (stock && stock.api === 'yahoo') {
-                            console.log(`🌍 Using Yahoo Finance API for ${symbol} (${stock.ticker})`);
-                            console.log(`🚨 DEBUG: About to call fetchStockPriceYahoo for ${symbol} with ticker ${stock.ticker}`);
-                            try {
-                                price = await this.fetchStockPriceYahoo(symbol, stock.ticker);
-                                console.log(`🚨 DEBUG: fetchStockPriceYahoo result for ${symbol}:`, price);
-                            } catch (error) {
-                                console.log(`🚨 DEBUG: fetchStockPriceYahoo ERROR for ${symbol}:`, error);
-                                throw error;
-                            }
-                        } else if (stock && stock.api === 'fmp') {
-                            console.log(`🌍 Using FMP API for ${symbol}`);
-                            price = await this.fetchStockPriceFMP(symbol);
+                            price = await this.fetchStockPriceYahoo(symbol, stock.ticker);
                         } else {
-                            console.log(`🇺🇸 Using Finnhub API for ${symbol}`);
                             price = await this.fetchStockPrice(symbol);
-                            
-                            // If Finnhub fails for WIX, try FMP as fallback
-                            if (!price && symbol === 'WIX') {
-                                console.log(`🔄 Finnhub failed for WIX, trying FMP API as fallback`);
-                                try {
-                                    price = await this.fetchStockPriceFMP(symbol);
-                                    apiUsed = 'fmp-fallback';
-                                    console.log(`📊 FMP fallback result for WIX:`, price);
-                                } catch (fallbackError) {
-                                    console.log(`❌ FMP fallback also failed for WIX:`, fallbackError);
-                                }
-                            }
                         }
-                        
-                        console.log(`📊 Price result for ${symbol}:`, price);
-                        console.log(`🔍 Price validation for ${symbol}:`, {
-                            hasPrice: !!price,
-                            hasCurrent: price && !!price.current,
-                            currentValue: price?.current,
-                            previousValue: price?.previous,
-                            priceType: typeof price?.current,
-                            apiUsed: apiUsed
-                        });
                         
                         if (price && price.current) {
                             results.push({ status: 'fulfilled', value: { symbol, price, success: true, apiUsed } });
-                            console.log(`✅ Successfully processed RSU ${symbol}`);
                         } else {
                             results.push({ status: 'fulfilled', value: { symbol, price: null, success: false, error: 'No price data available' } });
-                            console.log(`❌ No price data for RSU ${symbol}`);
                         }
                     } catch (error) {
                         console.error(`Error fetching price for RSU ${symbol}:`, error);
                         results.push({ status: 'rejected', reason: error });
-                        console.log(`❌ Error processing RSU ${symbol}`);
                     }
                     
                     // Add delay between requests (except for the last one)
                     if (i < symbols.length - 1) {
-                        console.log(`⏳ Waiting 800ms before next RSU request...`);
-                        await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay
+                        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
                     }
                 }
                 
