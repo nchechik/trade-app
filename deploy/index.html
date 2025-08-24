@@ -1554,6 +1554,149 @@
             }
         }
 
+        /* Debug Button */
+        .debug-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+
+        .debug-btn:hover {
+            background: var(--card-hover);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Debug Modal */
+        .debug-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .debug-modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .debug-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--dark-lighter);
+        }
+
+        .debug-modal-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .debug-close {
+            background: var(--danger);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .debug-close:hover {
+            background: #c53030;
+        }
+
+        .debug-modal-body {
+            padding: 20px;
+        }
+
+        .debug-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .debug-controls button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .debug-controls button:hover {
+            background: var(--primary-dark);
+        }
+
+        .debug-logs {
+            background: var(--dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .debug-log-entry {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--primary);
+            word-break: break-word;
+        }
+
+        .debug-log-entry.error {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .debug-log-entry.success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .debug-log-entry.warning {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -1824,6 +1967,9 @@
                     </div>
                 </div>
                 <div class="header-right">
+                    <button class="debug-btn" onclick="portfolioDashboard.showDebugModal()" title="Show debug information">
+                        🔍
+                    </button>
                     <button class="refresh-icon-btn" id="refresh-all-button" onclick="portfolioDashboard.refreshAllData()" title="Refresh all data">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0,0,32,32">
                             <path d="M16,4c-5.11328,0 -9.38281,3.16016 -11.125,7.625l1.84375,0.75c1.45703,-3.73437 4.99219,-6.375 9.28125,-6.375c3.24219,0 6.13281,1.58984 7.9375,4h-3.9375v2h7v-7h-2v3.09375c-2.19141,-2.51172 -5.42969,-4.09375 -9,-4.09375zM25.28125,19.625c-1.45703,3.73438 -4.99219,6.375 -9.28125,6.375c-3.27734,0 -6.15625,-1.61328 -7.96875,-4h3.96875v-2h-7v7h2v-3.09375c2.1875,2.48047 5.39453,4.09375 9,4.09375c5.11328,0 9.38281,-3.16016 11.125,-7.625z" fill="currentColor"/>
@@ -1879,6 +2025,26 @@
                 <span class="error-icon">⚠️</span>
                 <span class="error-text" id="error-text">Error message will appear here</span>
                 <button class="error-close" onclick="portfolioDashboard.hideErrorMessage()">×</button>
+            </div>
+        </div>
+
+        <!-- Debug Modal -->
+        <div class="debug-modal" id="debug-modal" style="display: none;">
+            <div class="debug-modal-content">
+                <div class="debug-modal-header">
+                    <h3>🔍 Debug Information</h3>
+                    <button class="debug-close" onclick="portfolioDashboard.hideDebugModal()">×</button>
+                </div>
+                <div class="debug-modal-body">
+                    <div class="debug-controls">
+                        <button onclick="portfolioDashboard.clearDebugLogs()">Clear Logs</button>
+                        <button onclick="portfolioDashboard.copyDebugLogs()">Copy All Logs</button>
+                        <button onclick="portfolioDashboard.toggleAutoScroll()">Toggle Auto-scroll</button>
+                    </div>
+                    <div class="debug-logs" id="debug-logs">
+                        <div class="debug-log-entry">Debug logs will appear here...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -2163,6 +2329,12 @@
                 // Load sort state and currency state from localStorage
                 this.loadSortState();
                 this.loadCurrencyState();
+                
+                // Debug modal settings
+                this.autoScrollLogs = true;
+                
+                // Override console.log to capture all logs
+                this.setupDebugLogging();
                 
                 this.init();
             }
@@ -3739,6 +3911,138 @@
                 this.renderPortfolioTable(); // Add this to refresh the portfolio table
                 this.updateRSUDisplay();
                 this.updateTotalWealthDisplay();
+            }
+
+            // Debug Modal Methods
+            showDebugModal() {
+                const modal = document.getElementById('debug-modal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    this.updateDebugLogs();
+                }
+            }
+
+            hideDebugModal() {
+                const modal = document.getElementById('debug-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            clearDebugLogs() {
+                const logsContainer = document.getElementById('debug-logs');
+                if (logsContainer) {
+                    logsContainer.innerHTML = '<div class="debug-log-entry">Debug logs cleared...</div>';
+                }
+            }
+
+            copyDebugLogs() {
+                const logsContainer = document.getElementById('debug-logs');
+                if (logsContainer) {
+                    const logs = Array.from(logsContainer.children)
+                        .map(entry => entry.textContent)
+                        .join('\n');
+                    
+                    navigator.clipboard.writeText(logs).then(() => {
+                        // Show a brief success message
+                        const originalText = logsContainer.innerHTML;
+                        logsContainer.innerHTML = '<div class="debug-log-entry success">✅ Logs copied to clipboard!</div>';
+                        setTimeout(() => {
+                            logsContainer.innerHTML = originalText;
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy logs:', err);
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = logs;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        const originalText = logsContainer.innerHTML;
+                        logsContainer.innerHTML = '<div class="debug-log-entry success">✅ Logs copied to clipboard!</div>';
+                        setTimeout(() => {
+                            logsContainer.innerHTML = originalText;
+                        }, 2000);
+                    });
+                }
+            }
+
+            toggleAutoScroll() {
+                this.autoScrollLogs = !this.autoScrollLogs;
+                const logsContainer = document.getElementById('debug-logs');
+                if (logsContainer && this.autoScrollLogs) {
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }
+            }
+
+            addDebugLog(message, type = 'info') {
+                const logsContainer = document.getElementById('debug-logs');
+                if (logsContainer) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const logEntry = document.createElement('div');
+                    logEntry.className = `debug-log-entry ${type}`;
+                    logEntry.textContent = `[${timestamp}] ${message}`;
+                    
+                    logsContainer.appendChild(logEntry);
+                    
+                    if (this.autoScrollLogs) {
+                        logsContainer.scrollTop = logsContainer.scrollHeight;
+                    }
+                }
+            }
+
+            updateDebugLogs() {
+                // This will be called when the modal is shown
+                this.addDebugLog('Debug modal opened - showing current logs...', 'info');
+            }
+
+            setupDebugLogging() {
+                // Store original console methods
+                const originalLog = console.log;
+                const originalError = console.error;
+                const originalWarn = console.warn;
+                const originalInfo = console.info;
+
+                // Override console.log
+                console.log = (...args) => {
+                    originalLog.apply(console, args);
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    this.addDebugLog(message, 'info');
+                };
+
+                // Override console.error
+                console.error = (...args) => {
+                    originalError.apply(console, args);
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    this.addDebugLog(message, 'error');
+                };
+
+                // Override console.warn
+                console.warn = (...args) => {
+                    originalWarn.apply(console, args);
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    this.addDebugLog(message, 'warning');
+                };
+
+                // Override console.info
+                console.info = (...args) => {
+                    originalInfo.apply(console, args);
+                    const message = args.map(arg => 
+                        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                    ).join(' ');
+                    this.addDebugLog(message, 'info');
+                };
+
+                // Add initial debug log
+                this.addDebugLog('Debug logging system initialized', 'success');
             }
         }
         
