@@ -2718,17 +2718,27 @@
                 
                 console.log(`📋 Portfolio data to process:`, this.portfolioData.map(s => s.symbol));
                 
-                // Create promises with rate limiting to avoid API limits
-                const promises = this.portfolioData.map(async (stock, index) => {
-                    // Add delay between requests to avoid rate limiting
-                    if (index > 0) {
-                        await new Promise(resolve => setTimeout(resolve, 200)); // 200ms delay
+                // Process stocks sequentially with rate limiting to avoid API limits
+                const results = [];
+                for (let i = 0; i < this.portfolioData.length; i++) {
+                    const stock = this.portfolioData[i];
+                    console.log(`🔄 Processing stock ${i + 1}/${this.portfolioData.length}: ${stock.symbol}`);
+                    
+                    try {
+                        const price = await this.fetchStockPriceWithFallback(stock.symbol);
+                        results.push({ status: 'fulfilled', value: { symbol: stock.symbol, price, success: !!price } });
+                        console.log(`✅ Successfully processed ${stock.symbol}`);
+                    } catch (error) {
+                        console.error(`❌ Error processing ${stock.symbol}:`, error);
+                        results.push({ status: 'rejected', reason: error });
                     }
-                    return await this.fetchStockPriceWithFallback(stock.symbol);
-                });
-                console.log(`🔄 Created ${promises.length} fetch promises`);
-                
-                const results = await Promise.allSettled(promises);
+                    
+                    // Add delay between requests (except for the last one)
+                    if (i < this.portfolioData.length - 1) {
+                        console.log(`⏳ Waiting 300ms before next request...`);
+                        await new Promise(resolve => setTimeout(resolve, 300)); // 300ms delay
+                    }
+                }
                 console.log(`📊 All promises settled:`, results.map((r, i) => ({
                     symbol: this.portfolioData[i].symbol,
                     status: r.status,
@@ -3587,12 +3597,12 @@
                 let errorCount = 0;
                 const errors = [];
                 
-                // Create promises for all RSU price fetches with rate limiting
-                const promises = symbols.map(async (symbol, index) => {
-                    // Add delay between requests to avoid rate limiting
-                    if (index > 0) {
-                        await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay
-                    }
+                // Process RSU stocks sequentially with rate limiting to avoid API limits
+                const results = [];
+                for (let i = 0; i < symbols.length; i++) {
+                    const symbol = symbols[i];
+                    console.log(`🔄 Processing RSU ${i + 1}/${symbols.length}: ${symbol}`);
+                    
                     try {
                         const stock = this.rsuData.find(s => s.symbol === symbol);
                         console.log(`🔍 Processing RSU ${symbol} with API: ${stock?.api}`);
@@ -3642,17 +3652,24 @@
                         });
                         
                         if (price && price.current) {
-                            return { symbol, price, success: true, apiUsed };
+                            results.push({ status: 'fulfilled', value: { symbol, price, success: true, apiUsed } });
+                            console.log(`✅ Successfully processed RSU ${symbol}`);
                         } else {
-                            return { symbol, price: null, success: false, error: 'No price data available' };
+                            results.push({ status: 'fulfilled', value: { symbol, price: null, success: false, error: 'No price data available' } });
+                            console.log(`❌ No price data for RSU ${symbol}`);
                         }
                     } catch (error) {
                         console.error(`Error fetching price for RSU ${symbol}:`, error);
-                        return { symbol, price: null, success: false, error: error.message };
+                        results.push({ status: 'rejected', reason: error });
+                        console.log(`❌ Error processing RSU ${symbol}`);
                     }
-                });
-                
-                const results = await Promise.allSettled(promises);
+                    
+                    // Add delay between requests (except for the last one)
+                    if (i < symbols.length - 1) {
+                        console.log(`⏳ Waiting 800ms before next RSU request...`);
+                        await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay
+                    }
+                }
                 
                 // Check individual results and update successful ones
                 results.forEach((result) => {
